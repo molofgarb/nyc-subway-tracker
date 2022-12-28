@@ -13,7 +13,9 @@
 - Should be able to create a table to uniquely identify a train as it progresses through stations
 
 main: 
-qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP - alerts (for ALL forms of transport - dynamic)
-Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - routes (for ALL forms of transport - static)
+qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP - alerts (for ALL forms of transport - dynamic) (IGNORE)
+Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - routes (for ALL forms of transport - static) (kept in resources)
+  https://otp-mta-prod.camsys-apps.com/otp/routers/default/index/routes?apikey=Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE
 qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP - stopsForRoute (after clicking on a train - static)
+  https://collector-otp-prod.camsys-apps.com/schedule/MTASBWY/stopsForRoute?apikey=qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP&&routeId=MTASBWY:<LINE DESIGNATION>
 Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - nearby (after clicking on a stop - dynamic)
