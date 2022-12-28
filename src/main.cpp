@@ -1,10 +1,15 @@
 #include <iostream>
+#include <fstream>
 #include <string>
+
+#include "nlohmann\json.hpp"
+using json = nlohmann::json;
+
 
 int main() {
     std::cout << "Hello World" << std::endl;
-    std::cout << "Please enter the location of your videos:";
-    std::string main_path = "";
-    std::cin >> main_path;
-    std::cout << "You entered: " << main_path << std::endl;
+    std::ifstream routes_data("../resources/routes.json");
+
+    json routes = json::parse(routes_data);
+    std::cout << routes["id"];
 }
