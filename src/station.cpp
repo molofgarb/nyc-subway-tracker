@@ -2,69 +2,39 @@
 
 #include <vector>
 #include <string>
-
-#include <stdio.h>
-#include <curl/curl.h>
+#include <ctime>
 
 #include "pugixml/src/pugixml.hpp"
 
+#include "getPage.h"
+
 #include "station.h"
 
+const std::string STATION_URL = "https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY%3A";
 const std::string STATION_API_KEY = "Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE";
-// curl -v -H "apikey: Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE" https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY%3AG14
 
 
-// from libcurl url2file (https://curl.se/libcurl/c/url2file.html)
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
-  size_t written = fwrite(ptr, size, nmemb, (FILE*)stream);
-  return written;
+//Train equality operator
+inline bool operator==(const Train& lhs, const Train& rhs) {
+    return ((lhs.name == rhs.name) && (lhs.dirID == rhs.dirID));
 }
+
+// ===== STATION ==============================================================
 
 //Station constructor
-Station::Station(const std::string& name, const std::string& stopID, std::vector<Train*>* trainTypes): 
-    name(name), stopID(stopID), trainTypes(trainTypes) {
-    this->update();
-}
+Station::Station(const std::string& name, const std::string& stopID, const std::vector<Train*>* trainTypes): 
+    name(name), stopID(stopID), updateTime(0), trainTypes(trainTypes) {}
 
 //gets the XML file from the MTA with info about arriving trains
 void getStationXML(Station& station) {
-    // go to the URL associated with the stopID
-    std::string url = ("https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY%3A" + station.stopID);
-    const char* outFile = "stationTemp.xml";
+    const std::string url = STATION_URL + station.stopID; //url to web page with data
+    const std::vector<std::string> headers{ //headers in get request
+        "apikey: " + STATION_API_KEY,
+        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+    };
+    const std::string outFile = "stationTemp.xml"; //file created to hold xml downloaded
     
-    CURL* curl = curl_easy_init();
-    FILE* file;
-    CURLcode res;
-    
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-
-    //configure headers
-    struct curl_slist* headers = NULL;
-    std::string apikeyHeader = "apikey: " + STATION_API_KEY;
-    std::string contentType = "Content-Type: application/xml";
-    std::string accept = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
-    headers = curl_slist_append(headers, apikeyHeader.data());
-    headers = curl_slist_append(headers, contentType.data());
-    headers = curl_slist_append(headers, accept.data());
-
-    if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, url.data());
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-        file = fopen(outFile, "wb");
-        if (file) {
-            std::cout << curl << std::endl;
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-            res = curl_easy_perform(curl);
-            std::cout << "CURLcode: " << res << std::endl;
-            fclose(file);
-        }
-    }
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
+    get_page::getPage(url, headers, outFile);
 }
 
 //populates nearby vector with info on nearby trains using an XML file in local dir
@@ -110,19 +80,26 @@ void populateNearby(Station& station) {
 void Station::update() {
     getStationXML(*this); //get XML file with train info
     populateNearby(*this); //update vector nearby with train info
+    updateTime = time(nullptr); //timestamp when object fully updated
     std::remove("stationTemp.xml"); // remove XML file downloaded
 } 
 
-std::string Station::getName() const {
-    return name;
+std::pair<std::string, std::string> Station::getNameAndID() const {
+    return std::pair(name, stopID);
 }
 
+std::time_t Station::getTime() const {
+    return updateTime;   
+}
 
 std::ostream& operator<<(std::ostream& os, const Station& rhs) {
-    os << "These are the nearby trains:" << std::endl;
+    os << "These are the nearby trains for " << rhs.name << ": " << std::endl;
     for (std::pair<Train*, int> arrival : rhs.nearby) {
-        os << "\t";
-        os << arrival.first->name << ":\n\t\t" << "Time: " << arrival.second << std::endl;
+        std::time_t dateTime(arrival.second);
+        os << arrival.first->name << 
+            ", " << ((arrival.first->dirID > 0) ?  "southbound" : "northbound") <<
+            ":\t" << "Unix Timestamp: " << arrival.second << 
+            "\t" << ctime(&dateTime);
     }
     return os;
 }

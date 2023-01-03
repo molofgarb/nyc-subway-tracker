@@ -3,7 +3,7 @@
 CC := g++
 FLAGS := -std=c++17 -O2
 LINKS := -L .\src\curl\lib\.libs -l libcurl
-# links to libcurl library
+# links: libcurl library
 
 TARGET := main.exe
 
@@ -21,21 +21,26 @@ clean:
 	-rm *.o
 
 #WIP
-${TARGET}: main.o station.o pugixml.o json.o
+${TARGET}: main.o station.o line.o getPage.o pugixml.o
 	${CC} ${FLAGS} $^ ${LINKS} -o $@
 
 main.o: src/main.cpp 
 	${CC} -c ${FLAGS} $^ -o $@
 
-station.o: src/station.cpp
+station.o: src/station.cpp 
 	${CC} -c ${FLAGS} $^ -o $@
+
+line.o: src/line.cpp
+	${CC} -c ${FLAGS} $^ -o $@
+
+getPage.o: src/getPage.cpp
+	${CC} -c ${FLAGS} $^ -o $@
+
 
 pugixml.o: src/pugixml/src/pugixml.cpp # compile pugixml
 	${CC} -c ${FLAGS} $^ -o $@
 
-json.o: src/nlohmann/single_include/nlohmann/json.hpp # compile json
-	${CC} -c ${FLAGS} -x c++ $^ -o $@
-
+# nlohmann's json does not need to be compiled individually
 
 
 #for debug of station
