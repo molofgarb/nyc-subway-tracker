@@ -42,7 +42,7 @@ void get_page::getPage(const std::string& url,
         if (file) {
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
             res = curl_easy_perform(curl);
-            std::cout << "<DEBUG> CURLcode: " << res << std::endl;
+            // std::cout << "<DEBUG getPage.cpp> CURLcode: " << res << "\t URL: " << url << std::endl;
             fclose(file);
         }
     }
