@@ -1,6 +1,8 @@
 .vscode
 notes
 
+*.json
+*.txt
 *.stackdump
 
 main

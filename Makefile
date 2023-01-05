@@ -1,11 +1,14 @@
 .PHONY: all clean
 
-CC := g++
-FLAGS := -std=c++17 -O2
-LINKS := -L .\src\curl\lib\.libs -l libcurl
-# links: libcurl library
+CXX := g++
+CXXFLAGS := -std=c++17 -O2
+LDFLAGS := -L .\src\curl\lib\.libs -l libcurl
+# LDFLAGS: libcurl library
 
-TARGET := main.exe
+TARGET := nyc-subway-tracker.exe
+
+MYOBJECTS := main.o subway.o line.o station.o getPage.o
+OBJECTS := ${MYOBJECTS} pugixml.o
 
 
 #adjust vars to reflect OS
@@ -15,37 +18,27 @@ ROUTES_TARGET := routes_fix
 endif
 
 
-all: main.exe
+all: ${TARGET}
 
 clean: 
 	-rm *.o
+	-rm *.stackdump
 
-#WIP
-${TARGET}: main.o station.o line.o getPage.o pugixml.o
-	${CC} ${FLAGS} $^ ${LINKS} -o $@
+${TARGET}: ${OBJECTS}
+	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
 
-main.o: src/main.cpp 
-	${CC} -c ${FLAGS} $^ -o $@
-
-station.o: src/station.cpp 
-	${CC} -c ${FLAGS} $^ -o $@
-
-line.o: src/line.cpp
-	${CC} -c ${FLAGS} $^ -o $@
-
-getPage.o: src/getPage.cpp
-	${CC} -c ${FLAGS} $^ -o $@
-
+${MYOBJECTS}: %.o: src/%.cpp
+	${CXX} -c ${CXXFLAGS} $< -o $@
 
 pugixml.o: src/pugixml/src/pugixml.cpp # compile pugixml
-	${CC} -c ${FLAGS} $^ -o $@
+	${CXX} -c ${CXXFLAGS} $< -o $@
 
-# nlohmann's json does not need to be compiled individually
+# # nlohmann's json does not need to be compiled individually
 
 
 #for debug of station
 station.exe: station.o pugixml.o
-	${CC} ${FLAGS} $^ ${LINKS} -o $@
+	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
 
 #==============================================================================
 
@@ -55,7 +48,7 @@ ROUTES_TARGET := routes_fix.exe
 routes_fix: ${ROUTES_TARGET}
 
 ${ROUTES_TARGET}: routes_fix.o
-	${CC} ${FLAGS} $^ -o src/misc/$@
+	${CXX} ${CXXFLAGS} $< -o src/misc/$@
 
 routes_fix.o: src/misc/routes_fix.cpp
-	${CC} ${FLAGS} -c $^ -o $@
+	${CXX} ${CXXFLAGS} -c $< -o $@
