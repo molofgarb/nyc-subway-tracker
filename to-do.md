@@ -1,12 +1,7 @@
-## Notes
-- Only keep last 30 days of data or a certain limit -- if data is older than current date and
-  the current amount of data is greater than the limit, then delete to meet the limit starting from oldest
-- Make sure to scrape at not too quick of an interval that bad things happen, but enough so that every train is captured
-- Should be able to create a table to uniquely identify a train as it progresses through stations
-
 # To-do:
 
-**High Priority**
+## **High Priority**
+- format time more nicely
 - use **std::shared_ptr** for Station* since shared by Line and Subway and fix Line destructor
 - use **custom struct** instead of std::pair in station
 - have station output say when it was checked in output operator
@@ -15,27 +10,31 @@
 - support use of line and station by itself (need to rework destructor)
   - support empty stationMap/stationtypes if line used in main script instead of subway
 
-
-**Medium Priority**
+## **Medium Priority**
 - make subway output nicer (multiple files in a directory option)
+- exception handling
 
-**Low Priority**:
+## **Low Priority**:
 - if libcurl get error, revisit station to update again later
 - progress bar?
 - what happens if one of the temp files is deleted while in progress?
 - **add pair to track end boroughs for a line, and use that in the output for a train to
   specify end borough direction rather than north/south
 
+## Notes
+- Only keep last 30 days of data or a certain limit -- if data is older than current date and
+  the current amount of data is greater than the limit, then delete to meet the limit starting from oldest
+- Make sure to scrape at not too quick of an interval that bad things happen, but enough so that every train is captured
+- Should be able to create a table to uniquely identify a train as it progresses through stations
 
-
-- Json convert:
+## Json convert:
   1. { --> \n{\n    
   2. } --> \n}
   3. , --> ,\n    
   4. },\n --> },
   5. ] --> \n]
 
-
+## URLs
 main: 
 qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP - **alerts** (for ALL forms of transport - dynamic) (IGNORE)
 - this could be used to track frequency of delays on each train -- may be implemented in future
@@ -54,7 +53,7 @@ Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - **nearby** (after clicking on a stop - dynami
   - above is example nearby for roosevelt av in queens
   https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY%3A<STOP ID BODY (stopsForRoute)>&apikey=Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE
 
-  ## Original Plan 
+## Original Plan 
   1. Figure out how to scrape data from the MTA service status webpage
   2. Figure out how to work with an SQL database
   3. Go to MTA service status website and get current status of A train
