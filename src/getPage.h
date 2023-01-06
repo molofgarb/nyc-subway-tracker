@@ -1,14 +1,12 @@
 #include <iostream>
-#include <fstream>
 
-#include <stdio.h>
+#include <cstdio>
 #include <curl/curl.h>
 
-#include <map>
-#include <vector>
 #include <string>
+#include <vector>
+#include <map>
 
-#include <algorithm>
 
 namespace constant {
     const std::map<std::string, std::string> SHUTTLE_NAMES{ //short id (valid url), name

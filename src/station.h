@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <string>
+
 #include <ctime>
 
 
@@ -19,7 +20,6 @@ struct Train{
     std::string name; //same as name member in line
     int dirID; // 0 for north, 1 for south
 };
-
 bool operator==(const Train& lhs, const Train& rhs);
 bool operator<(const Train& lhs, const Train& rhs); //(needed for std::map)
 
@@ -45,7 +45,7 @@ private:
     std::string name;
     std::string stopID;
 
-    std::vector<std::pair<const Train*, int>> nearby; //int is time in unix time
+    std::vector<std::pair<const Train*, time_t>> nearby; 
     std::time_t updateTime; //unix timestamp when nearby was updated
 
     const std::map<Train*, int>* trainTypes;
