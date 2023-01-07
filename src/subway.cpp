@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <iostream>
 #include <fstream>
 
@@ -9,31 +11,31 @@
 
 #include "nlohmann/single_include/nlohmann/json.hpp"
 
-#include "getPage.h"
+#include "common.h"
 #include "station.h"
 #include "line.h"
 
 #include "subway.h"
 
+using st_ptr = std::shared_ptr<Station>;
+
 
 Subway::Subway() {
     trainTypes = new std::map<Train*, int>();
-    allStations = new std::map<std::string, Station*>();
+    allStations = new std::map<std::string, st_ptr>();
 
     const std::vector<std::string> headers{
         "apikey: " + constant::SUBWAY_API_KEY,
     };
-    const std::string outFile = "subwayTemp.json";
+    std::string jsonData = "";
 
-    get_page::getPage(constant::SUBWAY_URL, headers, outFile);
-    parseSubwayJSON(outFile);
-    std::remove(outFile.data());
+    get_page::getPage(constant::SUBWAY_URL, headers, jsonData);
+    parseSubwayJSON(jsonData);
 }
 
 // fills out lines and trainTypes with data from subwayTemp.json
-void Subway::parseSubwayJSON(const std::string& filename) {
-    std::ifstream file(filename);
-    nlohmann::json data = nlohmann::json::parse(file);
+void Subway::parseSubwayJSON(std::string& jsonData) {
+    nlohmann::json data = nlohmann::json::parse(jsonData);
 
     for (nlohmann::json item : data) { //create trainTypes and lines
         auto originalID = item["id"].get<std::string>();
@@ -62,7 +64,7 @@ Subway::Subway(const Subway& other) {
         lines.push_back(new Line(*line));
     }
     trainTypes = new std::map<Train*, int>(*other.trainTypes);
-    allStations = new std::map<std::string, Station*>(*other.allStations);
+    allStations = new std::map<std::string, st_ptr>(*other.allStations);
 }
 
 Subway& Subway::operator=(const Subway& other) {
@@ -71,13 +73,13 @@ Subway& Subway::operator=(const Subway& other) {
             lines.push_back(new Line(*line));
         }
         trainTypes = new std::map<Train*, int>(*other.trainTypes);
-        allStations = new std::map<std::string, Station*>(*other.allStations);
+        allStations = new std::map<std::string, st_ptr>(*other.allStations);
     }
     return *this;
 }
 
 Subway::~Subway() {
-    for (Line* line : lines) { //destroy lines
+    for (auto line : lines) { //destroy lines
         if (line != nullptr) {
             delete line;
             line = nullptr;
@@ -95,32 +97,37 @@ Subway::~Subway() {
     delete trainTypes;
     trainTypes = nullptr;
 
-    for (std::pair<std::string, Station*> stationPair : *allStations) {
-        if (stationPair.second != nullptr) {
-            delete stationPair.second;
-            stationPair.second = nullptr;
-        }
-    }
-    allStations->clear();
+    allStations->clear(); //st_ptr takes care of own deletion
     delete allStations;
     allStations = nullptr;
 }
 
 //update each station from stations
 void Subway::update() {
-    for (std::pair<std::string, Station*> stationPair : *allStations) {
-        stationPair.second->update();
+    for (auto stationPair : *allStations) {
+        (*stationPair.second).update();
     }
     // (*allStations)["G14"]->update(); .// <DEBUG>
 }
 
-std::ostream& Subway::output(std::ostream& os, bool allowRepeat) const {
+std::ostream& Subway::outputByLine(std::ostream& os, bool allowRepeat) const {
     if (allowRepeat) {
-        for (const Line* line : lines) {
+        for (const auto line : lines) {
             os << *line << '\n';
         }
     } else { // do not repeat stations
-        // WIP
+        std::map<const st_ptr, int> allStationsCheck{}; //tracks if station has been output
+        for (const auto line : lines) {
+            os << "Below are the statuses for each station on the " <<
+                line->getName() << ":\n\n";
+            std::vector<st_ptr> stations(*line->getStations());
+            for (const auto stationptr : stations) {
+                if (allStationsCheck.find(stationptr) == allStationsCheck.end()) {
+                    os << *stationptr << '\n';
+                    allStationsCheck[stationptr] = 0;
+                }
+            }
+        }
     }
     return os;
 }
@@ -135,14 +142,14 @@ std::ostream& Subway::outputByStation(std::ostream& os) const {
         os << "The current time is " << timestr << '.' << '\n';
 
     os << "==================================================" << '\n';
-    for (std::pair<std::string, Station*> stationPair : *allStations) {
-        os << *(stationPair.second) << '\n';
+    for (const auto stationPair : *allStations) {
+        os << *(stationPair.second);
     }
     return os << '\n';
 }
 
 std::ostream& operator<<(std::ostream& os, const Subway& rhs) {
-    return rhs.outputByStation(os);
+    return rhs.outputByStation(os); //default output
 }
 
 // ===== DEBUG ================================================================

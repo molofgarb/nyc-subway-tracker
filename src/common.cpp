@@ -6,21 +6,20 @@
 #include <string>
 #include <vector>
 
-#include "getPage.h"
+#include "common.h"
 
 
-// from libcurl url2file (https://curl.se/libcurl/c/url2file.html)
-static size_t get_page::write_data(void *ptr, 
-                                   size_t size, 
-                                   size_t nmemb, 
-                                   void *stream) {
-    size_t written = fwrite(ptr, size, nmemb, (FILE*)stream);
-    return written;
+static size_t get_page::write_data(void* dataptr,     //pointer to data from curl
+                                   size_t size,       //size of each data element
+                                   size_t nmemb,      //num of data elements
+                                   void* outstream) { //data output stream
+    ((std::string*)outstream)->append((char*)dataptr, size * nmemb);
+    return size * nmemb;
 }
 
 void get_page::getPage(const std::string& url, 
                        const std::vector<std::string>& headers, 
-                       const std::string& outFile) {
+                       std::string& data) {
     CURL* curl = curl_easy_init();
     FILE* file;
     CURLcode res;
@@ -38,15 +37,13 @@ void get_page::getPage(const std::string& url,
         curl_easy_setopt(curl, CURLOPT_URL, url.data());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, full_header);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, get_page::write_data);
+
         // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-        file = fopen(outFile.data(), "wb");
-        if (file) {
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-            res = curl_easy_perform(curl);
-            // std::cout << "<DEBUG getPage.cpp> CURLcode: " << res << "\t URL: " << url << std::endl;
-            fclose(file);
-        }
+
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
+        res = curl_easy_perform(curl);
+        // std::cout << "<DEBUG getPage.cpp> CURLcode: " << res << "\t URL: " << url << std::endl;
     }
 
     //clean
@@ -54,4 +51,3 @@ void get_page::getPage(const std::string& url,
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 }
-

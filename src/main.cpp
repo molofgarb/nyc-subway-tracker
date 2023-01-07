@@ -56,8 +56,12 @@ int main() {
 
     Subway subway;
     std::ofstream file("subway.txt");
+    std::ofstream file2("subway_repeat.txt");
+    std::ofstream file3("subway_noRepeat.txt");
     subway.update();
     file << subway << std::endl;
+    subway.outputByLine(file2, true);
+    subway.outputByLine(file3, false);
 
     // //debug for test
     // while (true) {
