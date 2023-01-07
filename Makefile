@@ -7,7 +7,7 @@ LDFLAGS := -L .\src\curl\lib\.libs -l libcurl
 
 TARGET := nyc-subway-tracker.exe
 
-MYOBJECTS := main.o subway.o line.o station.o getPage.o
+MYOBJECTS := main.o subway.o line.o station.o common.o
 OBJECTS := ${MYOBJECTS} pugixml.o
 
 

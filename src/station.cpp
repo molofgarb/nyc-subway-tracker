@@ -8,10 +8,13 @@
 
 #include "pugixml/src/pugixml.hpp"
 
-#include "getPage.h"
+#include "common.h"
 
 #include "station.h"
 
+
+Train::Train(const std::string& name, int dirID): 
+             name(name), dirID(dirID) {}
 
 //Train equality operator
 bool operator==(const Train& lhs, const Train& rhs) {
@@ -23,34 +26,44 @@ bool operator<(const Train& lhs, const Train& rhs) {
     return (lhs.name == rhs.name) ? (lhs.dirID < rhs.dirID) : (lhs.name < rhs.name);
 }
 
+Arrival::Arrival(const Train* train, time_t time):
+                 train(train), time(time) {}
+
 // ===== STATION ==============================================================
 
 //Station constructor
-Station::Station(const std::string& name, const std::string& stopID, const std::map<Train*, int>* trainTypes): 
+Station::Station(const std::string& name, 
+                 const std::string& stopID, 
+                 const std::map<Train*, int>* trainTypes): 
     name(name), stopID(stopID), updateTime(0), trainTypes(trainTypes) {}
 
-//gets the XML file from the MTA with info about arriving trains
-void Station::getStationXML() {
+void Station::update() {
+    nearby.clear();
+
+    //get xml with arrival data
     const std::string url = constant::STATION_URL + stopID; //url to web page with data
     const std::vector<std::string> headers{ //headers in get request
         "apikey: " + constant::STATION_API_KEY,
         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     };
-    const std::string outFile = "stationTemp.xml"; //file created to hold xml downloaded
-    
-    get_page::getPage(url, headers, outFile);
-}
 
-//populates nearby vector with info on nearby trains using an XML file in local dir
-void Station::populateNearby() {
-    //parsing XML file
+    std::string xmlData = "";
+    get_page::getPage(url, headers, xmlData); //write xml page to xmlData
+    
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file("stationTemp.xml");
+    pugi::xml_parse_result result = doc.load_buffer_inplace(xmlData.data(), xmlData.size());
     if (!result) {
         std::cout << "error code: 1000" << '\n'; //unable to open
         return;
     }
 
+    populateNearby(doc); //update vector nearby with train info
+
+    updateTime = time(nullptr); //timestamp when object fully updated
+} 
+
+//populates nearby vector with info on nearby trains using an XML file in local dir
+void Station::populateNearby(pugi::xml_document& doc) {
     pugi::xml_node root = doc.child("LinkedValues");
 
     for (auto incomingTrainType: // for each type of train (ex. Manhattan-bound F)
@@ -86,19 +99,11 @@ void Station::populateNearby() {
             time_t time = //in unix time, realtime is the number used on webpage
                     incomingTrain.child("serviceDay").text().as_int() +
                     incomingTrain.child("realtimeArrival").text().as_int(); 
-            nearby.push_back(std::make_pair(trainptr, time));
+            nearby.push_back(Arrival(trainptr, time));
         }
     }
 
 }
-
-void Station::update() {
-    nearby.clear();
-    getStationXML(); //get XML file with train info
-    populateNearby(); //update vector nearby with train info
-    updateTime = time(nullptr); //timestamp when object fully updated
-    std::remove("stationTemp.xml"); // remove XML file downloaded
-} 
 
 std::pair<std::string, std::string> Station::getNameAndID() const {
     return std::pair(name, stopID);
@@ -120,11 +125,11 @@ std::ostream& operator<<(std::ostream& os, const Station& rhs) {
         os << "The data was updated for this station at " << timestr << '.' << '\n';
 
     for (auto arrival : rhs.nearby) {
-        std::time_t untilArrivalTime = arrival.second - timeNow; //diff arrival to now time
-        std::time_t arrivalTime(int(arrival.second) % (86400)); //updateTime in sec from start of day
+        std::time_t untilArrivalTime = arrival.time - timeNow; //diff arrival to now time
+        std::time_t arrivalTime(int(arrival.time) % (86400)); //updateTime in sec from start of day
 
-        os << arrival.first->name << ", " << 
-            ((arrival.first->dirID > 0) ?  "southbound (1)" : "northbound (0)");
+        os << arrival.train->name << ", " << 
+            ((arrival.train->dirID > 0) ?  "southbound (1)" : "northbound (0)");
         if (std::strftime(timestr, sizeof(timestr), "%M:%S", std::localtime(&untilArrivalTime)))
             os << ",\t" << "Time until arrival from now: " << timestr;
         if (std::strftime(timestr, sizeof(timestr), "%I:%M:%S %p", std::localtime(&arrivalTime)))

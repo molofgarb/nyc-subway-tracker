@@ -1,27 +1,32 @@
 # To-do:
 
 ## **High Priority**
-- format time more nicely
-- use **std::shared_ptr** for Station* since shared by Line and Subway and fix Line destructor
-- use **custom struct** instead of std::pair in station
-- have station output say when it was checked in output operator
-- get rid of people having trainTypes as a permanent member
+- fix multiple options for subway output
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
   - support empty stationMap/stationtypes if line used in main script instead of subway
+- sqlite3 stuff
 
 ## **Medium Priority**
+- add custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
+- getPage into string to reduce overhead
 - make subway output nicer (multiple files in a directory option)
 - exception handling
 
 ## **Low Priority**:
+- exception handling
 - if libcurl get error, revisit station to update again later
 - progress bar?
-- what happens if one of the temp files is deleted while in progress?
-- **add pair to track end boroughs for a line, and use that in the output for a train to
-  specify end borough direction rather than north/south
 
-## Notes
+
+## Completed
+- have station output say when it was checked in output operator
+- format time more nicely
+- use **std::shared_ptr** for Station* since shared by Line and Subway and fix Line destructor
+- use **custom struct** instead of std::pair in station
+- what happens if one of the temp files is deleted while in progress?
+
+# Notes
 - Only keep last 30 days of data or a certain limit -- if data is older than current date and
   the current amount of data is greater than the limit, then delete to meet the limit starting from oldest
 - Make sure to scrape at not too quick of an interval that bad things happen, but enough so that every train is captured
