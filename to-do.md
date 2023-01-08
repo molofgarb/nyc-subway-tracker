@@ -1,7 +1,7 @@
 # To-do:
 
 ## **High Priority**
-- fix multiple options for subway output
+- fix const structs with useless functions
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
   - support empty stationMap/stationtypes if line used in main script instead of subway
@@ -15,11 +15,13 @@
 
 ## **Low Priority**:
 - exception handling
+- use multithreading in line/subway update
 - if libcurl get error, revisit station to update again later
 - progress bar?
 
 
 ## Completed
+- fix multiple options for subway output
 - have station output say when it was checked in output operator
 - format time more nicely
 - use **std::shared_ptr** for Station* since shared by Line and Subway and fix Line destructor
@@ -31,6 +33,13 @@
   the current amount of data is greater than the limit, then delete to meet the limit starting from oldest
 - Make sure to scrape at not too quick of an interval that bad things happen, but enough so that every train is captured
 - Should be able to create a table to uniquely identify a train as it progresses through stations
+
+## Table Structurein tracker.cpp
+- Subway keeps stations
+  - Station keeps nearby
+- Subway keeps lines
+  - Lines keeps stations
+    - Stations keeps nearby
 
 ## Json convert:
   1. { --> \n{\n    

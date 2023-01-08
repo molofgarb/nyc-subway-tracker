@@ -29,12 +29,12 @@ Subway::Subway() {
     };
     std::string jsonData = "";
 
-    get_page::getPage(constant::SUBWAY_URL, headers, jsonData);
+    get_page::get_page(constant::SUBWAY_URL, headers, jsonData);
     parseSubwayJSON(jsonData);
 }
 
 // fills out lines and trainTypes with data from subwayTemp.json
-void Subway::parseSubwayJSON(std::string& jsonData) {
+int Subway::parseSubwayJSON(std::string& jsonData) {
     nlohmann::json data = nlohmann::json::parse(jsonData);
 
     for (nlohmann::json item : data) { //create trainTypes and lines
@@ -57,6 +57,7 @@ void Subway::parseSubwayJSON(std::string& jsonData) {
             lines.push_back(line);
         }
     }
+    return 0;
 }
 
 Subway::Subway(const Subway& other) {
@@ -103,10 +104,11 @@ Subway::~Subway() {
 }
 
 //update each station from stations
-void Subway::update() {
+int Subway::update() {
     for (auto stationPair : *allStations) {
         (*stationPair.second).update();
     }
+    return 0;
     // (*allStations)["G14"]->update(); .// <DEBUG>
 }
 

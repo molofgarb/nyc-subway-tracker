@@ -29,12 +29,12 @@ Line::Line(const std::string& name,
         "apikey: " + constant::LINE_API_KEY,
     };
     std::string jsonData = "";
-    get_page::getPage(url, headers, jsonData);
+    get_page::get_page(url, headers, jsonData);
     parseLineJSON(jsonData, trainTypes, allStations);
 }
 
 // populates stations with a station pointer for each station in lineTemp.json
-void Line::parseLineJSON(std::string& jsonData, 
+int Line::parseLineJSON(std::string& jsonData, 
                        const std::map<Train*, int>* trainTypes, 
                        std::map<std::string, st_ptr>* allStations
     ) {
@@ -57,6 +57,7 @@ void Line::parseLineJSON(std::string& jsonData,
             (*allStations)[stationID] = station; //add to all stations list kept by subway
         }
     }
+    return 0;
 }
 
 // copy constructor
@@ -87,10 +88,11 @@ Line::~Line() { //Subway will manage station deletion (for now)
 } 
 
 //updates each station that belongs to the station
-void Line::update() { //should typically not be used to avoid update overlap
+int Line::update() { //should typically not be used to avoid update overlap
     for (auto station : stations) {
         station->update();
     }
+    return 0;
 }
 
 const std::vector<st_ptr>* Line::getStations() const {

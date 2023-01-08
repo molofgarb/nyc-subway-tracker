@@ -12,10 +12,7 @@
 
 #include "station.h"
 
-
-Train::Train(const std::string& name, int dirID): 
-             name(name), dirID(dirID) {}
-
+             
 //Train equality operator
 bool operator==(const Train& lhs, const Train& rhs) {
     return ((lhs.name == rhs.name) && (lhs.dirID == rhs.dirID));
@@ -25,10 +22,7 @@ bool operator==(const Train& lhs, const Train& rhs) {
 bool operator<(const Train& lhs, const Train& rhs) {
     return (lhs.name == rhs.name) ? (lhs.dirID < rhs.dirID) : (lhs.name < rhs.name);
 }
-
-Arrival::Arrival(const Train* train, time_t time):
-                 train(train), time(time) {}
-
+                 
 // ===== STATION ==============================================================
 
 //Station constructor
@@ -37,7 +31,7 @@ Station::Station(const std::string& name,
                  const std::map<Train*, int>* trainTypes): 
     name(name), stopID(stopID), updateTime(0), trainTypes(trainTypes) {}
 
-void Station::update() {
+int Station::update() {
     nearby.clear();
 
     //get xml with arrival data
@@ -48,22 +42,23 @@ void Station::update() {
     };
 
     std::string xmlData = "";
-    get_page::getPage(url, headers, xmlData); //write xml page to xmlData
+    get_page::get_page(url, headers, xmlData); //write xml page to xmlData
     
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_buffer_inplace(xmlData.data(), xmlData.size());
     if (!result) {
-        std::cout << "error code: 1000" << '\n'; //unable to open
+        std::cerr << "error code: 1000" << '\n'; //unable to open
         return;
     }
 
     populateNearby(doc); //update vector nearby with train info
 
     updateTime = time(nullptr); //timestamp when object fully updated
+    return 0;
 } 
 
 //populates nearby vector with info on nearby trains using an XML file in local dir
-void Station::populateNearby(pugi::xml_document& doc) {
+int Station::populateNearby(pugi::xml_document& doc) {
     pugi::xml_node root = doc.child("LinkedValues");
 
     for (auto incomingTrainType: // for each type of train (ex. Manhattan-bound F)
@@ -90,8 +85,9 @@ void Station::populateNearby(pugi::xml_document& doc) {
             }
         }
         if (trainptr == nullptr) { //<DEBUG>
-            std::cout << "error <station.cpp>: 2000 " + name + " " << 
+            std::cerr << "error <station.cpp>: 2000 " + name + " " << 
                          dirID << '\n'; // error
+            return 1;
         }
 
         //check incomings of this type and add to nearby vector
@@ -102,7 +98,7 @@ void Station::populateNearby(pugi::xml_document& doc) {
             nearby.push_back(Arrival(trainptr, time));
         }
     }
-
+    return 0;
 }
 
 std::pair<std::string, std::string> Station::getNameAndID() const {

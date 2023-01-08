@@ -13,10 +13,8 @@
 
 
 struct Train {
-    Train(const std::string& name, int dirID);
-        
-    std::string getName() const {return name;}
-    int getdirID() const {return dirID;}
+    Train(const std::string& name, int dirID):
+        name(name), dirID(dirID) {}
 
     std::string name; //same as name member in line
     int dirID; // 0 for north, 1 for south
@@ -25,10 +23,8 @@ bool operator==(const Train& lhs, const Train& rhs);
 bool operator<(const Train& lhs, const Train& rhs); //(needed for std::map)
 
 struct Arrival {
-    Arrival(const Train* train=nullptr, std::time_t time=0);
-
-    const Train* getTrain() const {return train;}
-    std::time_t get_time() const {return time;}
+    Arrival(const Train* train=nullptr, std::time_t time=0):
+        train(train), time(time) {}
 
     const Train* train;
     std::time_t time;
@@ -40,7 +36,7 @@ public:
             const std::string& stopID, 
             const std::map<Train*, int>* trainTypes);
 
-    void update(); //updates nearby trains
+    int update(); //updates nearby trains
 
     std::pair<std::string, std::string> getNameAndID() const;
     std::time_t getTime() const;
@@ -52,7 +48,7 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const Station& rhs);
 
     //used for update()
-    void populateNearby(pugi::xml_document& doc);
+    int populateNearby(pugi::xml_document& doc);
 
     std::string name;
     std::string stopID;
