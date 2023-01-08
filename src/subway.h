@@ -22,7 +22,7 @@ public:
     Subway& operator=(const Subway& other);
     ~Subway();
 
-    void update();
+    int update();
     
     std::ostream& outputByStation(std::ostream& os) const;
     std::ostream& outputByLine(std::ostream& os, bool allowRepeat=true) const;
@@ -33,7 +33,7 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const Subway& rhs);
 
     //used in constructor
-    void parseSubwayJSON(std::string& jsonData);
+    int parseSubwayJSON(std::string& jsonData);
 
     std::vector<Line*> lines;
     std::map<Train*, int>* trainTypes; //train, dummy int

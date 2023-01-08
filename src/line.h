@@ -26,7 +26,7 @@ public:
     ~Line();
 
     //updates the stations throughout the line (updates nearby for each station)
-    void update(); 
+    int update(); 
 
     //returns stations (used in subway)
     const std::vector<st_ptr>* getStations() const;
@@ -38,7 +38,7 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const Line& rhs);
 
     //used in constructor
-    void parseLineJSON(std::string& jsonData, 
+    int parseLineJSON(std::string& jsonData, 
                        const std::map<Train*, int>* trainTypes, 
                        std::map<std::string, st_ptr>* allStations
     );

@@ -35,7 +35,7 @@ namespace get_page {
                              void *stream);
 
     //uses libcurl to get a webpage
-    void getPage(const std::string& url, 
+    int get_page(const std::string& url, 
                  const std::vector<std::string>& headers, 
                  std::string& data);
 
