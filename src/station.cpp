@@ -48,7 +48,7 @@ int Station::update() {
     pugi::xml_parse_result result = doc.load_buffer_inplace(xmlData.data(), xmlData.size());
     if (!result) {
         std::cerr << "error code: 1000" << '\n'; //unable to open
-        return;
+        return 1;
     }
 
     populateNearby(doc); //update vector nearby with train info

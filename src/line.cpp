@@ -11,9 +11,9 @@
 #include "nlohmann/single_include/nlohmann/json.hpp"
 
 #include "common.h"
-#include "Station.h"
+#include "station.h"
 
-#include "Line.h"
+#include "line.h"
 
 using st_ptr = std::shared_ptr<Station>;
 
