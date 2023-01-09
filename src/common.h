@@ -29,10 +29,10 @@ namespace constant {
 //for libcurl
 namespace get_page {
     //used in libcurl to write data from webpage into file
-    static size_t write_data(void *ptr, 
+    static size_t write_data(void* ptr, 
                              size_t size, 
                              size_t nmemb, 
-                             void *stream);
+                             void* stream);
 
     //uses libcurl to get a webpage
     int get_page(const std::string& url, 
