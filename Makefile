@@ -2,12 +2,12 @@
 
 CXX := g++
 CXXFLAGS := -std=c++17 -O2
-LDFLAGS := -L .\src\curl\lib\.libs -l libcurl
+LDFLAGS := -L ./src/curl/lib/.libs -l curl
 # LDFLAGS: libcurl library
 
 TARGET := nyc-subway-tracker.exe
 
-MYOBJECTS := main.o subway.o line.o station.o common.o
+MYOBJECTS := main.o tracker.o subway.o line.o station.o common.o
 OBJECTS := ${MYOBJECTS} pugixml.o
 
 
@@ -25,7 +25,7 @@ clean:
 	-rm *.stackdump
 
 ${TARGET}: ${OBJECTS}
-	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
+	${CXX} -v ${CXXFLAGS} $^ ${LDFLAGS} -o $@
 
 ${MYOBJECTS}: %.o: src/%.cpp
 	${CXX} -c ${CXXFLAGS} $< -o $@

@@ -2,7 +2,7 @@
 notes
 
 *.json
-.xml
+*.xml
 *.txt
 *.stackdump
 

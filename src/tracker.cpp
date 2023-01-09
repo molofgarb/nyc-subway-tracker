@@ -58,16 +58,24 @@ sqlite3* create_new_table(sqlite3* db, const Table& table) {
 
 sqlite3* insert_data(sqlite3* db, const Table& table, const std::vector<std::string> row) {
     std::string zSql = "INSERT INTO " + table.name + " (";
-    for (auto i = 0; i < table.columns.size(); i++) {
+
+    for (auto i = 0; i < table.columns.size(); i++) { //add table info
         zSql.append(table.columns[i].second); //names of rows
         if (i != row.size() - 1) zSql.append(",");
     }
-    for (auto i = 0; i < row.size(); i++) {
+    zSql.append(")\nVALLUES (");
+
+    for (auto i = 0; i < row.size(); i++) { //add data info
         zSql.append(row[i]);
         if (i != row.size() - 1) zSql.append(",");
     }
-    zSql.append('\n');
+    zSql.append(")\n");
 
+    sqlite3_stmt* insertData;
+    sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &insertData, nullptr);
+    sqlite3_step(insertData);
+    sqlite3_finalize(insertData);
+    return db;
 }
 
 }

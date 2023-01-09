@@ -3,8 +3,14 @@ A program that logs the history of the subway train arrival time predictions fro
 This program can be used to predict the delay between any train service for any station at any time.
 
 ## Installation
-Please see the releases section on the right side of the page to download an official release. The program
-can be self-built using the provided Makefile.
+# Download Release
+Please see the releases section on the right side of the page to download an official release. The only release provided was built for amd64 Windows. Please see the build instructions below if you want to build/run the code from another environment.
+
+# Build from source
+1. Clone the repository from GitHub.
+2. Initialize the submodules using git submodule update --init
+3. Build libcurl using the curl repository submodule by following the instructions in the GIT-INFO within the repo. Note that autoconf (with m4), automake, libtools, and make is needed to build libcurl. If on macOS with brew, install openssl with brew and use the --with-openssl=/opt/homebrew/opt/openssl option when running the configure file.
+4. Run the Makefile in the parent directory of the nyc-subway-tracker repository.
 
 ## Usage
 work in progress
