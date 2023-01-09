@@ -1,6 +1,7 @@
 # To-do:
 
 ## **High Priority**
+- pointerize tracker.cpp
 - fix const structs with useless functions
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
