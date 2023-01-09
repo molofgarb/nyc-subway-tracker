@@ -51,4 +51,5 @@ int get_page::get_page(const std::string& url,
     curl_slist_free_all(full_header);
     curl_easy_cleanup(curl);
     curl_global_cleanup();
+    return 0;
 }
