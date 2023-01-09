@@ -14,9 +14,11 @@
 
 const std::string DB_NAME = "nyc-subway-tracker.db";
 
+//pointerize everything because copying vectors is complex
 
 struct Table {
-    Table(std::string name, std::vector<std::pair<std::string, std::string>> columns):
+    Table(const std::string& name, 
+          const std::vector<std::pair<std::string, std::string>>& columns):
         name(name), columns(columns) {}
 
     std::string name;
