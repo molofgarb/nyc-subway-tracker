@@ -7,3 +7,6 @@
 [submodule "src/curl"]
 	path = src/curl
 	url = https://github.com/curl/curl
+[submodule "src/sqlite"]
+	path = src/sqlite
+	url = https://github.com/sqlite/sqlite
