@@ -16,6 +16,9 @@ OBJECTS := ${MYOBJECTS} pugixml.o
 ifneq (,$(filter ${shell uname}, Linux Darwin)) #Linux or macOS, WIP
 TARGET := nyc-subway-tracker
 endif
+ifeq (${shell uname}, Darwin)
+LDFLAGS += -L/opt/homebrew/Cellar/sqlite/3.40.1/lib -l sqlite3 # sqlite3
+endif
 
 
 all: ${TARGET}
