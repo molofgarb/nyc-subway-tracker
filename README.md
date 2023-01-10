@@ -36,6 +36,11 @@ know to be more proactive with checking the subway status to avoid being stuck i
 
 ---
 
+# License
+Licensed by the [MIT License](https://github.com/molofgarb/nyc-subway-tracker/blob/main/LICENSE).
+
+---
+
 # Credits
 curl team for libcurl for getting web pages.
 
