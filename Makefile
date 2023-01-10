@@ -3,7 +3,7 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -O2 -I/opt/homebrew/Cellar/sqlite/3.40.1/include
 LDFLAGS := -L ./src/curl/lib/.libs -l curl # libcurl
-LDFLAGS += -L/opt/homebrew/Cellar/sqlite/3.40.1/lib -l sqlite3 # sqlite3
+LDFLAGS += -L ./src/sqlite -l sqlite3 # sqlite3
 # LDFLAGS: libcurl library
 
 TARGET := nyc-subway-tracker.exe
@@ -15,9 +15,6 @@ OBJECTS := ${MYOBJECTS} pugixml.o
 #adjust vars to reflect OS
 ifneq (,$(filter ${shell uname}, Linux Darwin)) #Linux or macOS, WIP
 TARGET := nyc-subway-tracker
-endif
-ifeq (${shell uname}, Darwin)
-LDFLAGS += -L/opt/homebrew/Cellar/sqlite/3.40.1/lib -l sqlite3 # sqlite3
 endif
 
 
