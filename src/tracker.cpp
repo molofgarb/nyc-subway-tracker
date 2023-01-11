@@ -79,7 +79,15 @@ sqlite3* insert_row(sqlite3* db, const Table& table, const Row& row) {
 }
 
 sqlite3* delete_row(sqlite3* db, const Table& table, const Row& row) {
-
+    std::string primaryKey = table.columns[0].first;
+    std::string zSql = "DELETE from " + table.name + "where " +
+        primaryKey + "=" + row.data[0]; //assuming primary key is always first column
+    
+    sqlite3_stmt* deleteData;
+    sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &deleteData, nullptr);
+    sqlite3_step(deleteData);
+    sqlite3_finalize(deleteData);
+    return db;
 }
 
 }

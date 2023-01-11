@@ -29,7 +29,7 @@ struct Row {
     Row(const std::vector<std::pair<std::string, std::string>>& columns,
         const std::vector<std::string>& data): columns(columns), data(data) {}
 
-    std::vector<std::pair<std::string, std::string>> columns;
+    std::vector<std::pair<std::string, std::string>> columns; //name, data type
     std::vector<std::string> data;
 };
 
