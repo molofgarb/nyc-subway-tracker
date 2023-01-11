@@ -18,30 +18,33 @@ const std::string DB_NAME = "nyc-subway-tracker.db";
 
 struct Table {
     Table(const std::string& name, 
-          const std::vector<std::pair<std::string, std::string>>& columns):
+          const std::vector<std::pair<std::string, std::string>>* columns):
         name(name), columns(columns) {}
 
-    std::string name;
-    std::vector<std::pair<std::string, std::string>> columns; //name, data type
+    const std::string name;
+    const std::vector<std::pair<std::string, std::string>>* columns; //name, data type
 };
 
 struct Row {
-    Row(const std::vector<std::pair<std::string, std::string>>& columns,
-        const std::vector<std::string>& data): columns(columns), data(data) {}
+    Row(const std::vector<std::pair<std::string, std::string>>* columns,
+        const std::vector<std::string>* data): columns(columns), data(data) {}
 
-    std::vector<std::pair<std::string, std::string>> columns; //name, data type
-    std::vector<std::string> data;
+    const std::vector<std::pair<std::string, std::string>>* columns; //name, data type
+    const std::vector<std::string>* data;
 };
 
 namespace tracker {
-    void subway_initialize();
-    void subway_update();
+    sqlite3* subway_initialize(const Subway& subway, sqlite3* db = nullptr);
+    sqlite3* subway_update(Subway& subway);
+    sqlite3* subway_output(const Subway& subway);
 
-    void line_initialize();
-    void line_update();
+    sqlite3* line_initialize(const Line& line, sqlite3* db = nullptr);
+    sqlite3* line_update(Line& line);
+    sqlite3* line_output(const Line& line);
 
-    void station_initialize();
-    void station_update();
+    sqlite3* station_initialize(const Station& station, sqlite3* db = nullptr);
+    sqlite3* station_update(Station& station);
+    sqlite3* station_output(const Station& station);
 }
 
 namespace sql {

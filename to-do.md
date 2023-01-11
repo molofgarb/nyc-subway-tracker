@@ -1,7 +1,7 @@
 # To-do:
 
 ## **High Priority**
-- make sure that sqlite3 gets linked properly
+- exceptions for table operations in tracker - what if row/table doesn't exist?
 - pointerize tracker.cpp
 - fix const structs with useless functions
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
