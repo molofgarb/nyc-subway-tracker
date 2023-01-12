@@ -24,6 +24,8 @@ namespace constant {
 
     const std::string SUBWAY_URL = "https://otp-mta-prod.camsys-apps.com/otp/routers/default/index/routes";
     const std::string SUBWAY_API_KEY = "Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE";
+
+    const std::string DB_NAME = "nyc-subway-tracker.db";
 }
 
 //for libcurl

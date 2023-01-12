@@ -12,7 +12,7 @@
 #include "line.h"
 #include "station.h"
 
-const std::string DB_NAME = "nyc-subway-tracker.db";
+
 
 //pointerize everything because copying vectors is complex
 
@@ -47,7 +47,7 @@ namespace tracker {
     sqlite3* station_output(const Station& station);
 }
 
-namespace sql {
+namespace sqlite {
     sqlite3* create_db(const std::string& db_name);
     sqlite3* open_db(const std::string& db_name);
 

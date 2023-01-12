@@ -9,24 +9,28 @@
 #include "subway.h"
 #include "line.h"
 #include "station.h"
+#include "common.h"
 
 #include "tracker.h"
 
+
 namespace tracker {
-    sqlite3* subway_intialize(const Subway& subway, sqlite3* db /*= nullptr*/) {
-        
-    }
-
-    sqlite3* line_initialize(const Line& line, sqlite3* db /*= nullptr*/) {
-
-    }
-
-    sqlite3* station_initialize(const Station& station, sqlite3* db /*= nullptr*/) {
-
+sqlite3* subway_intialize(const Subway& subway, sqlite3* db /*= nullptr*/) {
+    if (db == nullptr) {
+        db = sqlite::create_db(constant::DB_NAME);
     }
 }
 
-namespace sql {
+sqlite3* line_initialize(const Line& line, sqlite3* db /*= nullptr*/) {
+
+}
+
+sqlite3* station_initialize(const Station& station, sqlite3* db /*= nullptr*/) {
+
+}
+}
+
+namespace sqlite {
 
 sqlite3* create_db(const std::string& db_name) {
     std::ifstream file(db_name);
