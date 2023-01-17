@@ -122,7 +122,7 @@ std::ostream& Subway::outputByLine(std::ostream& os, bool allowRepeat) const {
         for (const auto line : lines) {
             os << "Below are the statuses for each station on the " <<
                 line->getName() << ":\n\n";
-            std::vector<st_ptr> stations(*line->getStations());
+            std::vector<st_ptr> stations(line->getStations());
             for (const auto stationptr : stations) {
                 if (allStationsCheck.find(stationptr) == allStationsCheck.end()) {
                     os << *stationptr << '\n';

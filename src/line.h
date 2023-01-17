@@ -29,10 +29,10 @@ public:
     int update(); 
 
     //returns stations (used in subway)
-    const std::vector<st_ptr>* getStations() const;
+    const std::vector<st_ptr>& getStations() const {return stations;}
 
-    std::string getName() const;
-    std::string getID() const;
+    const std::string& getName() const {return name;}
+    const std::string& getID() const {return ID;}
 
 private:
     friend std::ostream& operator<<(std::ostream& os, const Line& rhs);

@@ -1,9 +1,9 @@
 # To-do:
 
 ## **High Priority**
+- build curl as part of makefile process
+- subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
 - exceptions for table operations in tracker - what if row/table doesn't exist?
-- pointerize tracker.cpp
-- fix const structs with useless functions
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
   - support empty stationMap/stationtypes if line used in main script instead of subway
@@ -23,6 +23,8 @@
 
 
 ## Completed
+- pointerize tracker.cpp
+- fix const structs with useless functions
 - make sure that environment is detected correctly in makefile
 - fix const structs with useless functions
 - fix multiple options for subway output

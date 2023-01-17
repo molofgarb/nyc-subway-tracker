@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include <cstdio>
-#include <curl/curl.h>
-
 #include <string>
 #include <vector>
+
+#include "curl/include/curl/curl.h"
+#include <cstdio>
 
 #include "common.h"
 

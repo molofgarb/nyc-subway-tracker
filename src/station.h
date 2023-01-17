@@ -28,7 +28,7 @@ struct Arrival {
         train(train), time(time) {}
 
     const Train* train;
-    std::time_t time;
+    std::time_t time; //time of arrival
 };
 
 class Station {
@@ -39,8 +39,10 @@ public:
 
     int update(); //updates nearby trains
 
-    std::pair<std::string, std::string> getNameAndID() const;
-    std::time_t getTime() const;
+    const std::string& getName() const {return name;}
+    const std::string& getID() const {return stopID;}
+    const std::vector<Arrival>& getNearby() const {return nearby;}
+    std::time_t getTime() const {return updateTime;}
 
     // void debug(); //not intended for normal use
 

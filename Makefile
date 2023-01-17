@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 CXX := g++
-CXXFLAGS := -std=c++17 -O2 -I/opt/homebrew/Cellar/sqlite/3.40.1/include
+CXXFLAGS := -std=c++17 -O2
 LDFLAGS := -L ./src/curl/lib/.libs -l curl # libcurl
 LDFLAGS += -L ./src/sqlite -l sqlite3 # sqlite3
 # LDFLAGS: libcurl library
