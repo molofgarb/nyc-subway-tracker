@@ -101,14 +101,6 @@ int Station::populateNearby(pugi::xml_document& doc) {
     return 0;
 }
 
-std::pair<std::string, std::string> Station::getNameAndID() const {
-    return std::pair(name, stopID);
-}
-
-std::time_t Station::getTime() const {
-    return updateTime;   
-}
-
 std::ostream& operator<<(std::ostream& os, const Station& rhs) {
     std::time_t timeNow = std::time(nullptr);
     char timestr[128] = "";

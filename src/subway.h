@@ -23,6 +23,9 @@ public:
     ~Subway();
 
     int update();
+
+    const std::vector<Line*>& getLines() const {return lines;}
+    const std::map<std::string, st_ptr>* getStations() const {return allStations;}
     
     std::ostream& outputByStation(std::ostream& os) const;
     std::ostream& outputByLine(std::ostream& os, bool allowRepeat=true) const;

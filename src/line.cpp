@@ -95,18 +95,6 @@ int Line::update() { //should typically not be used to avoid update overlap
     return 0;
 }
 
-const std::vector<st_ptr>* Line::getStations() const {
-    return &stations;
-}
-
-std::string Line::getName() const {
-    return name;
-}
-
-std::string Line::getID() const {
-    return ID;
-}
-
 std::ostream& operator<<(std::ostream& os, const Line& rhs) {
     os << "Below are the statuses for each station on the " <<
            rhs.name << ":\n\n";
