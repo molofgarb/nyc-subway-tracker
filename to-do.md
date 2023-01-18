@@ -1,7 +1,9 @@
 # To-do:
 
+- Download DB Browser for SQLite to view subway.db 
+
 ## **High Priority**
-- build curl as part of makefile process
+- build curl and sqlite as part of makefile process
 - subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
 - exceptions for table operations in tracker - what if row/table doesn't exist?
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing

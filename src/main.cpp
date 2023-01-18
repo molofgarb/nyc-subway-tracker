@@ -4,12 +4,17 @@
 #include <string>
 #include <vector>
 
+#include <chrono>
+    using namespace std::chrono_literals;
+#include <thread>
+
 // #include "nlohmann/single_include/nlohmann/json.hpp"
 // using json = nlohmann::json;
+#include "tracker.h"
 
 #include "subway.h"
-#include "station.h"
 #include "line.h"
+#include "station.h"
 
 
 int main() {
@@ -54,23 +59,40 @@ int main() {
 
     // ===== SUBWAY TEST ======================================================
 
-    Subway subway;
-    std::ofstream file("subway.txt");
-    // std::ofstream file2("subway_repeat.txt");
-    // std::ofstream file3("subway_noRepeat.txt");
-    subway.update();
-    file << subway << std::endl;
-    // subway.outputByLine(file2, true);
-    // subway.outputByLine(file3, false);
+    // Subway subway;
 
-    // //debug for test
-    // while (true) {
-    //     std::cout << "Input: ";
-    //     std::string input;
-    //     std::cin >> input;
-    //     subway.debug(input);
-    //     std::cout << std::endl;
-    // }
+    // std::ofstream file("subway.txt");
+    // // std::ofstream file2("subway_repeat.txt");
+    // // std::ofstream file3("subway_noRepeat.txt");
+
+    // subway.update();
+
+    // file << subway << std::endl;
+    // // subway.outputByLine(file2, true);
+    // // subway.outputByLine(file3, false);
+
+    // // //debug for test
+    // // while (true) {
+    // //     std::cout << "Input: ";
+    // //     std::string input;
+    // //     std::cin >> input;
+    // //     subway.debug(input);
+    // //     std::cout << std::endl;
+    // // }
+
+    // ===== TRACKER TEST =====================================================
+
+    sqlite3* db = tracker::subway_db_initialize(); //db containing subway snapshots
+
+    Subway subway; //subway object that holds last system check status
+
+    subway.update(); //update subway object -- get current system status
+    tracker::snapshot(subway, db); //log current system status in db
+
+    std::this_thread::sleep_for(1min); //wait for 1 min before next update
+
+    subway.update();
+    tracker::snapshot(subway, db);
 
     // ===== CLEAN UP FOR STATION--LINE TESTS =================================
 
