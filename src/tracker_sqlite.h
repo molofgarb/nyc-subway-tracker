@@ -21,14 +21,13 @@ struct Table {
 };
 
 namespace sqlite {
-    sqlite3* create_db(const std::string& db_name);
-    sqlite3* open_db(const std::string& db_name);
+    sqlite3* open_db(sqlite3* db, const std::string& db_name); //create/open
 
     sqlite3* create_new_table(sqlite3* db, const Table& table);
 
-    sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<const std::string> data);
-    sqlite3* delete_row(sqlite3* db, const Table& table, const std::vector<const std::string> data);
-    sqlite3* get_row(sqlite3* db, const Table& table, const std::vector<const std::string> data);
+    sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<const std::string>& data);
+    sqlite3* delete_row(sqlite3* db, const Table& table, const std::vector<const std::string>& data);
+    sqlite3* get_row(sqlite3* db, const Table& table, const std::vector<const std::string>& data);
 }
 
 #endif

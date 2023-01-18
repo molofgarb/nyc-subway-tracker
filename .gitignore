@@ -6,6 +6,7 @@ notes
 *.xml
 *.txt
 *.stackdump
+*.db
 
 # Prerequisites
 *.d

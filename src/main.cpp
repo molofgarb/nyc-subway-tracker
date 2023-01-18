@@ -10,8 +10,8 @@
 
 // #include "nlohmann/single_include/nlohmann/json.hpp"
 // using json = nlohmann::json;
-#include "tracker.h"
 
+#include "tracker.h"
 #include "subway.h"
 #include "line.h"
 #include "station.h"
@@ -82,17 +82,24 @@ int main() {
 
     // ===== TRACKER TEST =====================================================
 
-    sqlite3* db = tracker::subway_db_initialize(); //db containing subway snapshots
+    sqlite3* db = nullptr; 
+    db = tracker::subway_db_initialize(db); //initialize db and have db point to it
 
     Subway subway; //subway object that holds last system check status
 
     subway.update(); //update subway object -- get current system status
+    std::cout << "Update #1 done, starting snapshot" << std::endl;
+
     tracker::snapshot(subway, db); //log current system status in db
+    std::cout << "Snapshot #1 done, sleeping..." << std::endl;
 
     std::this_thread::sleep_for(1min); //wait for 1 min before next update
 
     subway.update();
+    std::cout << "Update #2 done, starting snapshot" << std::endl;
+
     tracker::snapshot(subway, db);
+    std::cout << "Snapshot #2 done, goodbye" << std::endl;
 
     // ===== CLEAN UP FOR STATION--LINE TESTS =================================
 

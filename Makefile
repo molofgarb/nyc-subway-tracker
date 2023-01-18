@@ -4,11 +4,11 @@ CXX := g++
 CXXFLAGS := -std=c++17 -O2
 LDFLAGS := -L ./src/curl/lib/.libs -l curl # libcurl
 LDFLAGS += -L ./src/sqlite -l sqlite3 # sqlite3
-# LDFLAGS: libcurl library
 
-TARGET := nyc-subway-tracker.exe
+TARGETPATH := ./build/
+TARGET := ${TARGETPATH}nyc-subway-tracker.exe
 
-MYOBJECTS := main.o tracker.o subway.o line.o station.o common.o
+MYOBJECTS := main.o tracker.o tracker_sqlite.o subway.o line.o station.o common.o
 OBJECTS := ${MYOBJECTS} pugixml.o
 
 
@@ -23,9 +23,10 @@ all: ${TARGET}
 clean: 
 	-rm *.o
 	-rm *.stackdump
+	-rm ${TARGET}
 
 ${TARGET}: ${OBJECTS}
-	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
+	${CXX} -v ${CXXFLAGS} $^ ${LDFLAGS} -o $@
 
 ${MYOBJECTS}: %.o: src/%.cpp
 	${CXX} -c ${CXXFLAGS} $< -o $@
