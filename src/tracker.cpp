@@ -22,9 +22,8 @@ namespace tracker {
 //initializes the database files used to keep track of snapshots
 sqlite3* subway_db_initialize(sqlite3* db) {
     std::cerr << "before open, the db is at " << db << std::endl;
-    db = sqlite::open_db(db, "subway.db");
+    db = sqlite::open_db(db, constant::DB_NAME);
     std::cerr << "after open, the db is at " << db << std::endl;
-    std::exit;
 
     Table subwayStations("Subway Stations", constant::SNAPSHOT_COLUMNS);
     db = sqlite::create_new_table(db, subwayStations);
@@ -49,7 +48,7 @@ sqlite3* snapshot(const Subway& subway, sqlite3* db) {
 } 
 
 //logs current subway system status in a new table
-time_t subway_snapshot(const Subway& subway, sqlite3* db /*= nullptr*/) {
+time_t subway_snapshot(const Subway& subway, sqlite3* db) {
     if (db == nullptr) { //db doesnt exist
         std::cerr << "<error> no db at subway_snapshot" << std::endl;
     }
@@ -66,7 +65,7 @@ time_t subway_snapshot(const Subway& subway, sqlite3* db /*= nullptr*/) {
     for (const auto stationPair : *subway.getStations()) { //pair.first is stopID
         std::vector<const std::string> data{
             //updates station, and then uses time of station update in primary key
-            stationPair.first + std::to_string((int)tracker::station_snapshot(*stationPair.second)), 
+            stationPair.first + std::to_string((int)tracker::station_snapshot(*stationPair.second, db)), 
             stationPair.first,
             stationPair.second->getName()
         };
@@ -75,7 +74,7 @@ time_t subway_snapshot(const Subway& subway, sqlite3* db /*= nullptr*/) {
     return time;
 }
 
-time_t station_snapshot(const Station& station, sqlite3* db /*= nullptr*/) {
+time_t station_snapshot(const Station& station, sqlite3* db) {
     if (db == nullptr) {
         std::cerr << "<error> no db at station_snapshot" << std::endl;
     }

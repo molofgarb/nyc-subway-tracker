@@ -18,7 +18,7 @@ sqlite3* open_db(sqlite3* db, const std::string& db_name) {
     char* error;
 
     int exit = sqlite3_open(db_name.data(), &db);
-    if (exit) {
+    if (exit) { // IMPORTANT <debug> error probably this
         std::cerr << "<error sql_helper::open_db()>" << std::endl;
         return nullptr;
     }

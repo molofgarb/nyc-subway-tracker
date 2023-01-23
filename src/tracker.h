@@ -23,18 +23,18 @@ namespace tracker {
     //these functions are used by snapshot() -- ordinarily should not be called
 
     //gets current subway status in terms of a large station snapshot and in terms of line snapshot
-    time_t subway_snapshot(const Subway& subway, sqlite3* db = nullptr);
+    time_t subway_snapshot(const Subway& subway, sqlite3* db);
 
     //gets current line status as a bunch of station snapshots
-    time_t line_snapshot(const Line& line, sqlite3* db = nullptr); //WIP
+    time_t line_snapshot(const Line& line, sqlite3* db); //WIP
 
     //gets current station snapshot
-    time_t station_snapshot(const Station& station, sqlite3* db = nullptr);
+    time_t station_snapshot(const Station& station, sqlite3* db);
 
     //WIP
-    sqlite3* subway_output(const Subway& subway, sqlite3* db = nullptr);
-    sqlite3* line_output(const Line& line, sqlite3* db = nullptr);
-    sqlite3* station_output(const Station& station, sqlite3* db = nullptr);
+    sqlite3* subway_output(const Subway& subway, sqlite3* db);
+    sqlite3* line_output(const Line& line, sqlite3* db);
+    sqlite3* station_output(const Station& station, sqlite3* db);
 }
 
 #endif

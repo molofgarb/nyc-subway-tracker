@@ -93,13 +93,13 @@ int main() {
     tracker::snapshot(subway, db); //log current system status in db
     std::cout << "Snapshot #1 done, sleeping..." << std::endl;
 
-    std::this_thread::sleep_for(1min); //wait for 1 min before next update
+    // std::this_thread::sleep_for(1min); //wait for 1 min before next update
 
-    subway.update();
-    std::cout << "Update #2 done, starting snapshot" << std::endl;
+    // subway.update();
+    // std::cout << "Update #2 done, starting snapshot" << std::endl;
 
-    tracker::snapshot(subway, db);
-    std::cout << "Snapshot #2 done, goodbye" << std::endl;
+    // tracker::snapshot(subway, db);
+    // std::cout << "Snapshot #2 done, goodbye" << std::endl;
 
     // ===== CLEAN UP FOR STATION--LINE TESTS =================================
 
