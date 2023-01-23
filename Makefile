@@ -26,7 +26,7 @@ clean:
 	-rm ${TARGET}
 
 ${TARGET}: ${OBJECTS}
-	${CXX} -v ${CXXFLAGS} $^ ${LDFLAGS} -o $@
+	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
 
 ${MYOBJECTS}: %.o: src/%.cpp
 	${CXX} -c ${CXXFLAGS} $< -o $@
@@ -40,6 +40,9 @@ pugixml.o: src/pugixml/src/pugixml.cpp # compile pugixml
 #for debug of station
 station.exe: station.o pugixml.o
 	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
+
+clean-db:
+	-rm nyc-subway-tracker.db
 
 #==============================================================================
 
