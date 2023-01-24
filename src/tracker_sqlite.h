@@ -11,6 +11,7 @@
 
 #include <sqlite3.h>
 
+
 struct Table {
     Table(const std::string& name, 
           const std::vector<std::pair<std::string, std::string>> columns):
@@ -19,6 +20,7 @@ struct Table {
     const std::string name;
     const std::vector<std::pair<std::string, std::string>> columns; //name, data type
 };
+
 
 namespace sqlite {
     sqlite3* open_db(sqlite3* db, const std::string& db_name); //create/open
