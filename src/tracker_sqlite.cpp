@@ -39,7 +39,7 @@ sqlite3* create_new_table(sqlite3* db, const Table& table) {
 
     }
 
-    std::cerr << "<debug> zSql: " << zSql << std::endl;
+    // std::cerr << "<debug> zSql: \n" << zSql << std::endl;
     sqlite3_stmt* createTable;
     sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &createTable, nullptr);
     sqlite3_step(createTable);
@@ -48,21 +48,21 @@ sqlite3* create_new_table(sqlite3* db, const Table& table) {
 }
 
 sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<const std::string>& data) {
-    std::string zSql = "INSERT INTO " + table.name + " (";
+    std::string zSql = "INSERT INTO " + table.name + "(";
 
     for (auto i = 0; i < (table.columns).size(); i++) { //add table info
-        zSql.append((table.columns)[i].second); //names of rows
+        zSql.append((table.columns)[i].first); //names of rows
         if (i != (table.columns).size() - 1) zSql.append(",");
     }
-    zSql.append(")\nVALLUES (");
+    zSql.append(")\nVALUES (");
 
     for (auto i = 0; i < data.size(); i++) { //add data info
-        zSql.append(data[i]);
+        zSql.append("'" + data[i] + "'");
         if (i != data.size() - 1) zSql.append(",");
     }
     zSql.append(");\n");
 
-    std::cerr << "<debug> zSql: " << zSql << std::endl;
+    std::cerr << "<debug> zSql: \n" << zSql << std::endl;
     sqlite3_stmt* insertData;
     sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &insertData, nullptr);
     sqlite3_step(insertData);
@@ -75,7 +75,7 @@ sqlite3* delete_row(sqlite3* db, const Table& table, const std::vector<const std
     std::string zSql = "DELETE FROM " + table.name + "WHERE " +
         primaryKey + "=" + data[0] + ";"; //assuming primary key is always first column
     
-    std::cerr << "<debug> zSql: " << zSql << std::endl;
+    // std::cerr << "<debug> zSql: " << zSql << std::endl;
     sqlite3_stmt* deleteData;
     sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &deleteData, nullptr);
     sqlite3_step(deleteData);
@@ -88,7 +88,7 @@ sqlite3* get_row(sqlite3* db, const Table& table, const std::vector<const std::s
     std::string zSql = "SELECT * from " + table.name + " WHERE " +
         primaryKey + " = " + data[0] + ";";
     
-    std::cerr << "<debug> zSql: " << zSql << std::endl;
+    // std::cerr << "<debug> zSql: " << zSql << std::endl;
     sqlite3_stmt* getData;
     sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &getData, nullptr);
     sqlite3_step(getData);
