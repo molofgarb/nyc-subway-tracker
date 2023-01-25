@@ -8,8 +8,11 @@ LDFLAGS += -L ./src/sqlite -l sqlite3 # sqlite3
 TARGETPATH := ./build/
 TARGET := ${TARGETPATH}nyc-subway-tracker.exe
 
-MYOBJECTS := main.o tracker.o tracker_sqlite.o subway.o line.o station.o common.o
-OBJECTS := ${MYOBJECTS} pugixml.o
+MYOBJECTS := subway.o line.o station.o common.o
+MYOBJECTS := tracker.o tracker_sqlite.o ${MYOBJECTS}
+MYOBJECTS := nyc-subway-tracker.o ${MYOBJECTS}
+
+OBJECTS := pugixml.o ${MYOBJECTS}
 
 
 #adjust vars to reflect OS
@@ -24,6 +27,7 @@ clean:
 	-rm *.o
 	-rm *.stackdump
 	-rm ${TARGET}
+	-rm subway.txt
 
 ${TARGET}: ${OBJECTS}
 	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@

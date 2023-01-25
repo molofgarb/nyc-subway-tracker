@@ -1,15 +1,15 @@
 # To-do:
 
-- Download DB Browser for SQLite to view subway.db 
+
 
 ## **High Priority**
-- build curl and sqlite as part of makefile process
+- log time in db for arrival as normal format instead of unix
 - subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
 - exceptions for table operations in tracker - what if row/table doesn't exist?
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
   - support empty stationMap/stationtypes if line used in main script instead of subway
-- sqlite3 stuff
+
 
 ## **Medium Priority**
 - add custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
@@ -25,6 +25,9 @@
 
 
 ## Completed
+- sqlite3 stuff
+- build curl and sqlite as part of makefile process
+- Download DB Browser for SQLite to view subway.db 
 - pointerize tracker.cpp
 - fix const structs with useless functions
 - make sure that environment is detected correctly in makefile

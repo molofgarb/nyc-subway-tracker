@@ -62,7 +62,7 @@ sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<const std
     }
     zSql.append(");\n");
 
-    std::cerr << "<debug> zSql: \n" << zSql << std::endl;
+    // std::cerr << "<debug> zSql: \n" << zSql << std::endl;
     sqlite3_stmt* insertData;
     sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &insertData, nullptr);
     sqlite3_step(insertData);

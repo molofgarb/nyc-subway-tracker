@@ -87,19 +87,26 @@ int main() {
 
     Subway subway; //subway object that holds last system check status
 
-    subway.update(); //update subway object -- get current system status
-    std::cout << "Update #1 done, starting snapshot" << std::endl;
+    // subway.update(); //update subway object -- get current system status
+    // std::cout << "Update #0 done, starting snapshot" << std::endl;
 
-    tracker::snapshot(subway, db); //log current system status in db
-    std::cout << "Snapshot #1 done, sleeping..." << std::endl;
+    // tracker::snapshot(subway, db); //log current system status in db
+    // std::cout << "Snapshot #0 done!" << std::endl;
 
-    // std::this_thread::sleep_for(1min); //wait for 1 min before next update
+    // std::ofstream file("subway.txt");
+    // file << subway << std::endl;
+    // file.close();
 
-    // subway.update();
-    // std::cout << "Update #2 done, starting snapshot" << std::endl;
+    for (auto i = 0; i < 10; i++) {
+        std::cout << "Starting Update #" << i << "..." << std::endl;
+        subway.update(); //update subway object -- get current system status
+        
+        std::cout << "Starting Snapshot #" << i << "..." << std::endl;
+        tracker::snapshot(subway, db); //log current system status in db
 
-    // tracker::snapshot(subway, db);
-    // std::cout << "Snapshot #2 done, goodbye" << std::endl;
+        std::cout << "Sleeping..." << std::endl;
+        std::this_thread::sleep_for(1min); //wait for 1 min before next update
+    }
 
     // ===== CLEAN UP FOR STATION--LINE TESTS =================================
 

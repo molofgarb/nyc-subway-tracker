@@ -22,7 +22,7 @@ namespace constant {
 
     const std::string SNAPSHOT_TABLE_NAME = "Subway_Snapshots";
     const std::vector<std::pair<std::string, std::string>> SNAPSHOT_COLUMNS = { // ex) Subway Stations
-        std::make_pair("Subway_Snapshot", "TINYTEXT"), // ex) Stations 1673908573
+        std::make_pair("Subway_Snapshot", "TINYTEXT"), // ex) Subway_1673908573
         std::make_pair("Time", "BIGINT(16)"), // ex) 1673908573
     };
     const Table SNAPSHOT_TABLE(
@@ -30,16 +30,17 @@ namespace constant {
         SNAPSHOT_COLUMNS
     );
 
-    const std::vector<std::pair<std::string, std::string>> SUBWAY_STATIONS_COLUMNS = { // ex) Stations_1673908573
-        std::make_pair("StopID_and_Time", "TINYTEXT"), // ex) G14 1673908573
+    const std::vector<std::pair<std::string, std::string>> SUBWAY_STATIONS_COLUMNS = { // ex) Subway_1673908573
+        std::make_pair("StopID_and_Time", "TINYTEXT"), // ex) G14_1673908573
         std::make_pair("StopID", "TINYTEXT"), // ex) G14
         std::make_pair("Name", "TINYTEXT") // ex) Roosevelt Av
     };
 
-    const std::vector<std::pair<std::string, std::string>> STATION_COLUMNS = { // ex) G14_1673908573
+    const std::vector<std::pair<std::string, std::string>> STATION_COLUMNS = { // ex) Station_G14_1673908573
+        std::make_pair("Name_and_Time", "TINYTEXT"), // ex) F_1673909000
         std::make_pair("Name", "TINYTEXT"), // ex) F
-        std::make_pair("DirID", "TINYTEXT"), // ex) 1
-        std::make_pair("Time_of_Arrival", "TINYTEXT") // ex) 1673909000
+        std::make_pair("Time_of_Arrival", "TINYTEXT"), // ex) 1673909000
+        std::make_pair("DirID", "TINYTEXT") // ex) 1
     };
 
     // const std::vector<std::pair<std::string, std::string>> LINE_COLUMNS = { // ex) F 1673908573
@@ -62,13 +63,13 @@ namespace tracker {
     //these functions are used by snapshot() -- ordinarily should not be called
 
     //gets current subway status in terms of a large station snapshot and in terms of line snapshot
-    time_t subway_snapshot(const Subway& subway, sqlite3* db);
+    const std::string subway_snapshot(const Subway& subway, sqlite3* db);
 
     //gets current line status as a bunch of station snapshots
-    time_t line_snapshot(const Line& line, sqlite3* db); //WIP
+    const std::string line_snapshot(const Line& line, sqlite3* db); //WIP
 
     //gets current station snapshot
-    time_t station_snapshot(const Station& station, sqlite3* db);
+    const std::string station_snapshot(const Station& station, sqlite3* db);
 
     //WIP
     sqlite3* subway_output(const Subway& subway, sqlite3* db);
