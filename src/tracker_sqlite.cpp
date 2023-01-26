@@ -48,7 +48,7 @@ sqlite3* create_new_table(sqlite3* db, const Table& table) {
     return db;
 }
 
-sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<const std::string>& data) {
+sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<std::string>& data) {
     std::string zSql = "INSERT INTO " + table.name + "(";
 
     for (auto i = 0; i < (table.columns).size(); i++) { //add table info
@@ -75,7 +75,7 @@ sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<const std
     return db;
 }
 
-sqlite3* delete_row(sqlite3* db, const Table& table, const std::vector<const std::string>& data) {
+sqlite3* delete_row(sqlite3* db, const Table& table, const std::vector<std::string>& data) {
     std::string primaryKey = table.columns[0].first;
     std::string zSql = "DELETE FROM " + table.name + "WHERE " +
         primaryKey + "=" + data[0] + ";"; //assuming primary key is always first column
@@ -92,7 +92,7 @@ sqlite3* delete_row(sqlite3* db, const Table& table, const std::vector<const std
     return db;
 }
 
-sqlite3* get_row(sqlite3* db, const Table& table, const std::vector<const std::string>& data) {
+sqlite3* get_row(sqlite3* db, const Table& table, const std::vector<std::string>& data) {
     std::string primaryKey = table.columns[0].first;
     std::string zSql = "SELECT * from " + table.name + " WHERE " +
         primaryKey + " = " + data[0] + ";";
