@@ -6,7 +6,9 @@
 
 #include <ctime>
 
-#include <sqlite3.h>
+extern "C" {
+#include "sqlite/sqlite3.h"
+}
 
 #include "tracker_sqlite.h"
 #include "subway.h"
@@ -29,7 +31,7 @@ sqlite3* subway_db_initialize(sqlite3* db) {
 
 //takes a snapshot -- adds current system status table into db snapshot
 sqlite3* snapshot(const Subway& subway, sqlite3* db) {
-    std::vector<const std::string> data{
+    std::vector<std::string> data{
         tracker::subway_snapshot(subway, db),
         std::to_string((int)std::time(nullptr))
     }; //reference to current snapshot to be added
@@ -56,7 +58,7 @@ const std::string subway_snapshot(const Subway& subway, sqlite3* db) {
     //add entries for each station
     for (const auto stationPair : *subway.getStations()) { 
         //updates station, and then uses time of station update in primary key
-        std::vector<const std::string> data{
+        std::vector<std::string> data{
             tracker::station_snapshot(*stationPair.second, db), 
             stationPair.first,
             stationPair.second->getName()
@@ -88,7 +90,7 @@ const std::string station_snapshot(const Station& station, sqlite3* db) {
         std::string name = (*arrival.train).name;
         std::string time = std::to_string(arrival.time);
 
-        std::vector<const std::string> data{
+        std::vector<std::string> data{
             name + "_" + time, 
             name,
             time,

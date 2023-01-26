@@ -1,7 +1,5 @@
 # To-do:
 
-
-
 ## **High Priority**
 - log time in db for arrival as normal format instead of unix
 - subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
@@ -12,6 +10,7 @@
 
 
 ## **Medium Priority**
+- compile submodules as part of make
 - add custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
 - getPage into string to reduce overhead
 - make subway output nicer (multiple files in a directory option)
