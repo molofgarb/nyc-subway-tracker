@@ -6,9 +6,7 @@
 
 #include <ctime>
 
-extern "C" {
 #include "sqlite/sqlite3.h"
-}
 
 #include "tracker_sqlite.h"
 #include "subway.h"
