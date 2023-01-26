@@ -88,9 +88,19 @@ const std::string station_snapshot(const Station& station, sqlite3* db) {
         std::string name = (*arrival.train).name;
         std::string time = std::to_string(arrival.time);
 
+        //arrival time conversion and formatting
+        std::time_t untilArrivalTime = arrival.time - std::time(nullptr); //diff arrival to now time
+        std::time_t arrivalTime(int(arrival.time) % (86400)); //updateTime in sec from start of day
+        char untilArrivalTimeStr[128] = "";
+        char arrivalTimeStr[128] = "";
+        std::strftime(untilArrivalTimeStr, sizeof(untilArrivalTimeStr), "%M:%S", std::localtime(&untilArrivalTime));
+        std::strftime(arrivalTimeStr, sizeof(arrivalTimeStr), "%I:%M:%S %p", std::localtime(&arrivalTime));
+
         std::vector<const std::string> data{
             name + "_" + time, 
             name,
+            std::string(untilArrivalTimeStr),
+            std::string(arrivalTimeStr),
             time,
             std::to_string((*arrival.train).dirID), 
         };
