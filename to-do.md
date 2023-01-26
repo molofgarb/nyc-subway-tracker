@@ -1,6 +1,7 @@
 # To-do:
 
 ## **High Priority**
+- fix time until arrival bug in tracker and station
 - log time in db for arrival as normal format instead of unix
 - subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
 - exceptions for table operations in tracker - what if row/table doesn't exist?
