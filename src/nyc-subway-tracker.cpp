@@ -87,26 +87,26 @@ int main() {
 
     Subway subway; //subway object that holds last system check status
 
-    // subway.update(); //update subway object -- get current system status
-    // std::cout << "Update #0 done, starting snapshot" << std::endl;
+    subway.update(); //update subway object -- get current system status
+    std::cout << "Update #0 done, starting snapshot" << std::endl;
 
-    // tracker::snapshot(subway, db); //log current system status in db
-    // std::cout << "Snapshot #0 done!" << std::endl;
+    tracker::snapshot(subway, db); //log current system status in db
+    std::cout << "Snapshot #0 done!" << std::endl;
 
     // std::ofstream file("subway.txt");
     // file << subway << std::endl;
     // file.close();
 
-    for (auto i = 0; i < 10; i++) {
-        std::cout << "Starting Update #" << i << "..." << std::endl;
-        subway.update(); //update subway object -- get current system status
+    // for (auto i = 0; i < 10; i++) {
+    //     std::cout << "Starting Update #" << i << "..." << std::endl;
+    //     subway.update(); //update subway object -- get current system status
         
-        std::cout << "Starting Snapshot #" << i << "..." << std::endl;
-        tracker::snapshot(subway, db); //log current system status in db
+    //     std::cout << "Starting Snapshot #" << i << "..." << std::endl;
+    //     tracker::snapshot(subway, db); //log current system status in db
 
-        std::cout << "Sleeping..." << std::endl;
-        std::this_thread::sleep_for(1min); //wait for 1 min before next update
-    }
+    //     std::cout << "Sleeping..." << std::endl;
+    //     std::this_thread::sleep_for(1min); //wait for 1 min before next update
+    // }
 
     // ===== CLEAN UP FOR STATION--LINE TESTS =================================
 

@@ -39,8 +39,10 @@ namespace constant {
     const std::vector<std::pair<std::string, std::string>> STATION_COLUMNS = { // ex) Station_G14_1673908573
         std::make_pair("Name_and_Time", "TINYTEXT"), // ex) F_1673909000
         std::make_pair("Name", "TINYTEXT"), // ex) F
-        std::make_pair("Time_of_Arrival", "TINYTEXT"), // ex) 1673909000
-        std::make_pair("DirID", "TINYTEXT") // ex) 1
+        std::make_pair("Time_Until_Arrival", "TINYTEXT"), //ex) 05:33
+        std::make_pair("Time_of_Arrival", "TINYTEXT"), // ex) 12:28:00;
+        std::make_pair("Time_of_Arrival_Unix", "TINYTEXT"), // ex) 1673909000
+        std::make_pair("Direction_ID", "TINYTEXT") // ex) 1
     };
 
     // const std::vector<std::pair<std::string, std::string>> LINE_COLUMNS = { // ex) F 1673908573
