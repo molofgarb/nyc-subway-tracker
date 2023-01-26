@@ -1,9 +1,10 @@
 # To-do:
 
-
+last: added debug stuff in tracker_sqlite
 
 ## **High Priority**
 - log time in db for arrival as normal format instead of unix
+- implement line tables
 - subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
 - exceptions for table operations in tracker - what if row/table doesn't exist?
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
