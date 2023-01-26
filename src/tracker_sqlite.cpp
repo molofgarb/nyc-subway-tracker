@@ -36,15 +36,15 @@ sqlite3* create_new_table(sqlite3* db, const Table& table) {
         );
     }
 
-    std::cerr << "<debug> zSql: \n" << zSql << std::endl;
+    // std::cerr << "<debug> zSql: \n" << zSql << std::endl;
     sqlite3_stmt* createTable;
     int res0 = sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &createTable, nullptr);
     int res1 = sqlite3_step(createTable);
     int res2 = sqlite3_finalize(createTable);
-    if (res0 + res1 + res2 != 0) {
-        std::cerr << "<error create_new_table> Table: " << table.name << ' ' <<
-            res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
-    }
+    // if (res0 + res1 + res2 != 0) {
+    //     std::cerr << "<error create_new_table> Table: " << table.name << ' ' <<
+    //         res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
+    // }
     return db;
 }
 
@@ -68,10 +68,10 @@ sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<std::stri
     int res0 = sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &insertData, nullptr);
     int res1 = sqlite3_step(insertData);
     int res2 = sqlite3_finalize(insertData);
-    if (res0 + res1 + res2 != 0) {
-        std::cerr << "<error insert_row> Table: " << table.name << ' ' <<
-            res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
-    }
+    // if (res0 + res1 + res2 != 0) {
+    //     std::cerr << "<error insert_row> Table: " << table.name << ' ' <<
+    //         res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
+    // }
     return db;
 }
 
