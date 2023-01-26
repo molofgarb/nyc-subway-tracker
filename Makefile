@@ -1,16 +1,16 @@
 .PHONY: all clean
 
 CXX := g++
-CXXFLAGS := -std=c++17 -O2
-LDFLAGS := -L ./src/curl/lib/.libs -l curl # libcurl
-LDFLAGS += -L ./src/sqlite -l sqlite3 # sqlite3
+CXXFLAGS := -std=c++17 -O0
+LDFLAGS := -L ./src/curl/lib/.libs -l curl # libcurl.a
+LDFLAGS += -L ./src/sqlite -l sqlite3 # libsqlite3.a
 
-TARGETPATH := ./build/
+TARGETPATH := ./
 TARGET := ${TARGETPATH}nyc-subway-tracker.exe
 
 MYOBJECTS := subway.o line.o station.o common.o
-MYOBJECTS := tracker.o tracker_sqlite.o ${MYOBJECTS}
-MYOBJECTS := nyc-subway-tracker.o ${MYOBJECTS}
+MYOBJECTS += tracker.o tracker_sqlite.o 
+MYOBJECTS += nyc-subway-tracker.o 
 
 OBJECTS := pugixml.o ${MYOBJECTS}
 
@@ -30,6 +30,7 @@ clean:
 	-rm subway.txt
 
 ${TARGET}: ${OBJECTS}
+	-mkdir ${TARGETPATH}
 	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
 
 ${MYOBJECTS}: %.o: src/%.cpp

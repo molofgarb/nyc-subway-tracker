@@ -12,7 +12,7 @@ Please see the releases section on the right side of the page to download an off
 1. Clone the repository from GitHub.
 2. Initialize the submodules using git submodule update --init
 3. Build libcurl using the curl repository submodule by following the instructions in the GIT-INFO within the repo. Note that autoconf (with m4), automake, libtools, and make is needed to build libcurl. If on macOS with homebrew, install openssl with brew and use the --with-openssl=/opt/homebrew/opt/openssl option when running the configure file.
-4. Build sqlite by renaming Makefile.linux-gcc to Makefile, making any changes in the makefile necessary to suit your environment, and running make.
+4. Build sqlite by renaming Makefile.linux-gcc to Makefile, making any changes in the makefile necessary to suit your environment, and running make. If on windows, make sure to change the EXE variable. If not on windows, then no change is usually needed.
 5. Run the Makefile in the parent directory of the nyc-subway-tracker repository.
 
 - pugixml is built in the nyc-subway-tracker Makefile. nlohmann's json does not need to be separately compiled.
