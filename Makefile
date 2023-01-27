@@ -49,7 +49,7 @@ ${PUGIXMLOBJ}: ${PUGIXMLSRC}
 	@echo
 	${CXX} -c ${CXXFLAGS} $< -o $@
 
-# # nlohmann's json does not need to be compiled individually
+# nlohmann's json does not need to be compiled individually
 
 # =============================================================================
 
