@@ -1,19 +1,17 @@
 # To-do:
 
+- add line tables and line-based subway table
+- add custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
+
 ## **High Priority**
-- fix time until arrival bug in tracker and station
-- log time in db for arrival as normal format instead of unix
 - subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
 - exceptions for table operations in tracker - what if row/table doesn't exist?
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
   - support empty stationMap/stationtypes if line used in main script instead of subway
 
-
 ## **Medium Priority**
 - compile submodules as part of make
-- add custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
-- getPage into string to reduce overhead
 - make subway output nicer (multiple files in a directory option)
 - exception handling
 
@@ -25,6 +23,9 @@
 
 
 ## Completed
+- getPage into string to reduce overhead
+- log time in db for arrival as normal format instead of unix
+- fix time until arrival bug in tracker and station
 - sqlite3 stuff
 - build curl and sqlite as part of makefile process
 - Download DB Browser for SQLite to view subway.db 
