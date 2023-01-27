@@ -1,6 +1,7 @@
 .vscode
-notes
 **/.DS_Store
+
+build
 
 *.json
 *.xml

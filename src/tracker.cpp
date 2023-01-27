@@ -89,7 +89,7 @@ const std::string station_snapshot(const Station& station, sqlite3* db) {
         std::string time = std::to_string(arrival.time);
 
         //arrival time conversion and formatting
-        std::time_t untilArrivalTime = arrival.time - std::time(nullptr); //diff arrival to now time
+        std::time_t untilArrivalTime = arrival.time - station.getTime(); //diff arrival to now time
         std::time_t arrivalTime(int(arrival.time) % (86400)); //updateTime in sec from start of day
         char untilArrivalTimeStr[128] = "";
         char arrivalTimeStr[128] = "";

@@ -113,7 +113,7 @@ std::ostream& operator<<(std::ostream& os, const Station& rhs) {
         os << "The data was updated for this station at " << timestr << '.' << '\n';
 
     for (auto arrival : rhs.nearby) {
-        std::time_t untilArrivalTime = arrival.time - timeNow; //diff arrival to now time
+        std::time_t untilArrivalTime = arrival.time - rhs.updateTime; //diff arrival to now time
         std::time_t arrivalTime(int(arrival.time) % (86400)); //updateTime in sec from start of day
 
         os << arrival.train->name << ", " << 
