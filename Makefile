@@ -1,9 +1,9 @@
 .PHONY: all remake directories clean cleaner cleandb
 
 # File Extensions
-SRCEXT		:= .cpp
-OBJEXT		:= .o
-TARGETEXT	:= .exe
+SRCEXT		:= cpp
+OBJEXT		:= o
+TARGETEXT	:= exe
 
 # Adjust TARGETEXT based on OS
 ifneq (,$(filter ${shell uname}, Linux Darwin)) #Linux or macOS, WIP
@@ -56,18 +56,18 @@ ${PUGIXMLOBJ}: ${PUGIXMLSRC}
 remake: cleaner all
 
 directories:
-	@mkdir ${BUILDPATH}
-	@mkdir ${TARGETPATH}
+	-mkdir ${BUILDPATH}
+	-mkdir ${TARGETPATH}
 
 clean: 
-	@rm -f ${BUILDPATH}
+	-rm -f ${BUILDPATH}
 
 cleaner: 
-	@rm -rf ${BUILDPATH}
-	@rm -rf ${TARGETPATH}
+	-rm -rf ${BUILDPATH}
+	-rm -rf ${TARGETPATH}
 
 cleandb:
-	@rm -f nyc-subway-tracker.db
+	-rm -f nyc-subway-tracker.db
 
 # =============================================================================
 # Unused
