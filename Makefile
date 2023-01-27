@@ -1,59 +1,80 @@
-.PHONY: all clean
+.PHONY: all remake directories clean cleaner cleandb
 
-CXX := g++
-CXXFLAGS := -std=c++17 -O0
-LDFLAGS := -L ./src/curl/lib/.libs -l curl # libcurl.a
-LDFLAGS += -L ./src/sqlite -l sqlite3 # libsqlite3.a
+# File Extensions
+SRCEXT		:= .cpp
+OBJEXT		:= .o
+TARGETEXT	:= .exe
 
-TARGETPATH := ./
-TARGET := ${TARGETPATH}nyc-subway-tracker.exe
-
-MYOBJECTS := subway.o line.o station.o common.o
-MYOBJECTS += tracker.o tracker_sqlite.o 
-MYOBJECTS += nyc-subway-tracker.o 
-
-OBJECTS := pugixml.o ${MYOBJECTS}
-
-
-#adjust vars to reflect OS
+# Adjust TARGETEXT based on OS
 ifneq (,$(filter ${shell uname}, Linux Darwin)) #Linux or macOS, WIP
-TARGET := nyc-subway-tracker
+TARGETEXT 	:= 
 endif
 
+# Compiler
+CXX 		:= g++
+CXXFLAGS 	:= -std=c++17 -g -O3 #-Wall
+LDFLAGS 	:= -L src/curl/lib/.libs -l curl 	# libcurl.a
+LDFLAGS 	+= -L src/sqlite -l sqlite3 		# libsqlite3.a
 
-all: ${TARGET}
+# Paths
+SRCPATH 	:= src
+BUILDPATH 	:= build
+TARGETPATH 	:= build
 
-clean: 
-	-rm *.o
-	-rm *.stackdump
-	-rm ${TARGET}
-	-rm subway.txt
+# Build Dependencies
+PUGIXMLSRC	:= ${SRCPATH}/pugixml/src/pugixml.cpp
+PUGIXMLOBJ	:= ${BUILDPATH}/pugixml.${OBJEXT}
+
+# Build (Project Sources and Objects)
+SOURCES 	:= $(wildcard $(SRCPATH)/*.${SRCEXT})
+OBJECTS 	:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
+
+# Target
+TARGET 		:= ${TARGETPATH}/nyc-subway-tracker.${TARGETEXT}
+
+# =============================================================================
+
+all: directories ${TARGET}
 
 ${TARGET}: ${OBJECTS}
-	-mkdir ${TARGETPATH}
+	@echo
 	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
+	@echo 
 
-${MYOBJECTS}: %.o: src/%.cpp
+${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
+	@echo
 	${CXX} -c ${CXXFLAGS} $< -o $@
 
-pugixml.o: src/pugixml/src/pugixml.cpp # compile pugixml
+${PUGIXMLOBJ}: ${PUGIXMLSRC}
+	@echo
 	${CXX} -c ${CXXFLAGS} $< -o $@
 
 # # nlohmann's json does not need to be compiled individually
 
+# =============================================================================
 
-#for debug of station
-station.exe: station.o pugixml.o
-	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
+remake: cleaner all
 
-clean-db:
-	-rm nyc-subway-tracker.db
+directories:
+	@mkdir ${BUILDPATH}
+	@mkdir ${TARGETPATH}
 
-#==============================================================================
+clean: 
+	@rm -f ${BUILDPATH}
+
+cleaner: 
+	@rm -rf ${BUILDPATH}
+	@rm -rf ${TARGETPATH}
+
+cleandb:
+	@rm -f nyc-subway-tracker.db
+
+# =============================================================================
+# Unused
+# =============================================================================
 
 ROUTES_TARGET := routes_fix.exe
 
-# for routes_fix for processing routes.json
 routes_fix: ${ROUTES_TARGET}
 
 ${ROUTES_TARGET}: routes_fix.o
