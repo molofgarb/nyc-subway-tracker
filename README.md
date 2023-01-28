@@ -1,4 +1,6 @@
-<h1 align=center> nyc-subway-tracker </h1>
+<h1 align=center> 
+    <img src="resources/logo-transparent.png" align=center width=50>  nyc-subway-tracker 
+</h1>
 <div align=center><img alt="GitHub" src="https://img.shields.io/github/license/molofgarb/nyc-subway-tracker"></div>
 A program that logs the history of the subway train arrival time predictions from https://new.mta.info/.
 This program can be used to predict the delay between any train service for any station at any time.

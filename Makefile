@@ -19,7 +19,7 @@ LDFLAGS 	+= -L src/sqlite -l sqlite3 		# libsqlite3.a
 # Paths
 SRCPATH 	:= src
 BUILDPATH 	:= build
-TARGETPATH 	:= build
+TARGETPATH 	:= bin
 
 # Build Dependencies
 PUGIXMLSRC	:= ${SRCPATH}/pugixml/src/pugixml.cpp
