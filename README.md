@@ -1,8 +1,7 @@
-# nyc-subway-tracker ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+<h1 align=center> nyc-subway-tracker </h1>
+<div align=center><img alt="GitHub" src="https://img.shields.io/github/license/molofgarb/nyc-subway-tracker"></div>
 A program that logs the history of the subway train arrival time predictions from https://new.mta.info/.
 This program can be used to predict the delay between any train service for any station at any time.
-
----
 
 # Installation
 ## Download Release
@@ -17,29 +16,19 @@ Please see the releases section on the right side of the page to download an off
 
 - pugixml is built in the nyc-subway-tracker Makefile. nlohmann's json does not need to be separately compiled.
 
----
-
 # Usage
 work in progress
 
----
-
 # Notes 
 work in progress
-
----
 
 # Why?
 The data from this tool can be used to find the time between trains for a station that you are planning to visit.
 If the data shows that the station has a long delay for a train service that you need (e.g. 15 min delay), you can
 know to be more proactive with checking the subway status to avoid being stuck in the station for a while.
 
----
-
 # License
 Licensed by the [MIT License](https://github.com/molofgarb/nyc-subway-tracker/blob/main/LICENSE).
-
----
 
 # Credits
 curl team for libcurl for getting web pages.
