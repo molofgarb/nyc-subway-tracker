@@ -25,6 +25,8 @@ TARGETPATH 	:= build
 PUGIXMLSRC	:= ${SRCPATH}/pugixml/src/pugixml.cpp
 PUGIXMLOBJ	:= ${BUILDPATH}/pugixml.${OBJEXT}
 
+DEPOBJECTS	:= ${PUGIXMLOBJ}
+
 # Build (Project Sources and Objects)
 SOURCES 	:= $(wildcard $(SRCPATH)/*.${SRCEXT})
 OBJECTS 	:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
@@ -36,10 +38,9 @@ TARGET 		:= ${TARGETPATH}/nyc-subway-tracker.${TARGETEXT}
 
 all: directories ${TARGET}
 
-${TARGET}: ${OBJECTS}
+${TARGET}: ${OBJECTS} ${DEPOBJECTS}
 	@echo
 	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
-	@echo 
 
 ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
 	@echo
