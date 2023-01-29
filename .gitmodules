@@ -1,12 +1,12 @@
-[submodule "libs/nlohmann"]
-	path = libs/nlohmann
+[submodule "external/nlohmann"]
+	path = external/nlohmann
 	url = https://github.com/nlohmann/json
-[submodule "libs/pugixml"]
-	path = libs/pugixml
+[submodule "external/pugixml"]
+	path = external/pugixml
 	url = https://github.com/zeux/pugixml
-[submodule "libs/curl"]
-	path = libs/curl
+[submodule "external/curl"]
+	path = external/curl
 	url = https://github.com/curl/curl
-[submodule "libs/sqlite"]
-	path = libs/sqlite
+[submodule "external/sqlite"]
+	path = external/sqlite
 	url = https://github.com/sqlite/sqlite
