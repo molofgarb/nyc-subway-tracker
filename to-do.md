@@ -1,5 +1,6 @@
 # To-do:
 
+- move constants to src files
 - add include flags thing to make to make includes nicer
 - add line tables and line-based subway table
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
