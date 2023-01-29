@@ -129,25 +129,3 @@ std::ostream& operator<<(std::ostream& os, const Station& rhs) {
     }
     return os << '\n';
 }
-
-
-// ===== DEBUG ================================================================
-
-// void Station::debug() {
-//     std::cout << "My name is " << name << '\n';
-//     std::cout << "My ID is " << stopID << '\n';
-//     std::cout << "My updateTime is " << updateTime << '\n';
-//     std::cout << "Nearbys: " << nearby.size() << '\n';
-//     for (std::pair<Train*, int> type : *trainTypes) {
-//         std::cout << "\tTrain: " << type.first << ' ' << type.first->getName() << '\n';
-//     }
-//     std::cout << "\n\n" << '\n';
-//     for (std::pair<Train*, int> type : *trainTypes) {
-//         std::cout << "\tTrain: " << type.first << ' ' << type.first->getName() << '\n';
-//     }
-//     for (std::pair<const Train*, int> arrival : nearby) {
-//         std::cout << "\tTrain: " << arrival.first->name << '\n';
-//         std::cout << "\tdirID: " << arrival.first->dirID << '\n';
-//         std::cout << "\tTime: " << arrival.second << '\n';
-//     }
-// }
