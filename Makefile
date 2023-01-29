@@ -12,29 +12,29 @@ endif
 
 # Paths
 SRCPATH 	:= src
-LIBSPATH	:= libs
+EXTPATH		:= external
 BUILDPATH 	:= build
 TARGETPATH 	:= bin
 
 # Compiler
 CXX 		:= g++
-CXXFLAGS 	:= -std=c++17 -g -O3 #-Wall
+CXXFLAGS 	:= -std=c++17 -g -O2 #-Wall
 INCFLAGS	:= -I include
 
 # Includes
-INCFLAGS	+= -I ${LIBSPATH}/curl/include
-INCFLAGS	+= -I ${LIBSPATH}/nlohmann/single_include
-INCFLAGS	+= -I ${LIBSPATH}/pugixml/src
-INCFLAGS	+= -I ${LIBSPATH}/sqlite/build			
+INCFLAGS	+= -I ${EXTPATH}/curl/include
+INCFLAGS	+= -I ${EXTPATH}/nlohmann/single_include
+INCFLAGS	+= -I ${EXTPATH}/pugixml/src
+INCFLAGS	+= -I ${EXTPATH}/sqlite/build			
 
 # Build and Link Externals
-PUGIXMLSRC	:= ${LIBSPATH}/pugixml/src/pugixml.cpp
+PUGIXMLSRC	:= ${EXTPATH}/pugixml/src/pugixml.cpp
 PUGIXMLOBJ	:= ${BUILDPATH}/pugixml.${OBJEXT}
 
 DEPOBJECTS	:= ${PUGIXMLOBJ}
 
-LDFLAGS 	:= -L ${LIBSPATH}/curl/lib/.libs -l curl 
-LDFLAGS 	+= -L ${LIBSPATH}/sqlite/build/.libs -l sqlite3 
+LDFLAGS 	:= -L ${EXTPATH}/curl/lib/.libs -l curl 
+LDFLAGS 	+= -L ${EXTPATH}/sqlite/build/.libs -l sqlite3 
 
 # Build (Project Sources and Objects)
 SOURCES 	:= $(wildcard $(SRCPATH)/*.${SRCEXT})
