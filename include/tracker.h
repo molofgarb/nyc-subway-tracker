@@ -6,8 +6,10 @@
 #include <string>
 #include <utility>
 
-#include "sqlite/sqlite3.h"
+// external includes
+#include <sqlite3.h>
 
+// nyc-subway-tracker includes
 #include "subway.h"
 #include "line.h"
 #include "station.h"

@@ -1,11 +1,13 @@
 #include <iostream>
+#include <cstdio>
 
 #include <string>
 #include <vector>
 #include <map>
 
-#include "curl/include/curl/curl.h"
-#include <cstdio>
+// external includes
+#include <curl/curl.h>
+
 
 
 namespace constant {

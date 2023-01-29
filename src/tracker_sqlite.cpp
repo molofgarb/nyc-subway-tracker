@@ -7,9 +7,11 @@
 
 #include <ctime>
 
-#include "sqlite/sqlite3.h"
+// external includes
+#include <sqlite3.h>
 
-#include "tracker_sqlite.h"
+// nyc-subway-tracker includes
+#include <tracker_sqlite.h>
 
 
 namespace sqlite {

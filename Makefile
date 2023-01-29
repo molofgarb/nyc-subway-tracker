@@ -10,22 +10,31 @@ ifneq (,$(filter ${shell uname}, Linux Darwin)) #Linux or macOS, WIP
 TARGETEXT 	:= 
 endif
 
-# Compiler
-CXX 		:= g++
-CXXFLAGS 	:= -std=c++17 -g -O3 #-Wall
-LDFLAGS 	:= -L src/curl/lib/.libs -l curl 	# libcurl.a
-LDFLAGS 	+= -L src/sqlite -l sqlite3 		# libsqlite3.a
-
 # Paths
 SRCPATH 	:= src
+LIBSPATH	:= libs
 BUILDPATH 	:= build
 TARGETPATH 	:= bin
 
-# Build Dependencies
-PUGIXMLSRC	:= ${SRCPATH}/pugixml/src/pugixml.cpp
+# Compiler
+CXX 		:= g++
+CXXFLAGS 	:= -std=c++17 -g -O3 #-Wall
+INCFLAGS	:= -I include
+
+# Includes
+INCFLAGS	+= -I ${LIBSPATH}/curl/include
+INCFLAGS	+= -I ${LIBSPATH}/nlohmann/single_include
+INCFLAGS	+= -I ${LIBSPATH}/pugixml/src
+INCFLAGS	+= -I ${LIBSPATH}/sqlite/build			
+
+# Build and Link Externals
+PUGIXMLSRC	:= ${LIBSPATH}/pugixml/src/pugixml.cpp
 PUGIXMLOBJ	:= ${BUILDPATH}/pugixml.${OBJEXT}
 
 DEPOBJECTS	:= ${PUGIXMLOBJ}
+
+LDFLAGS 	:= -L ${LIBSPATH}/curl/lib/.libs -l curl 
+LDFLAGS 	+= -L ${LIBSPATH}/sqlite/build/.libs -l sqlite3 
 
 # Build (Project Sources and Objects)
 SOURCES 	:= $(wildcard $(SRCPATH)/*.${SRCEXT})
@@ -39,16 +48,16 @@ TARGET 		:= ${TARGETPATH}/nyc-subway-tracker.${TARGETEXT}
 all: directories ${TARGET}
 
 ${TARGET}: ${OBJECTS} ${DEPOBJECTS}
-	@echo
-	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@
+	@echo 
+	${CXX} ${CXXFLAGS} ${INCFLAGS} $^ ${LDFLAGS} -o $@
 
 ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
 	@echo
-	${CXX} -c ${CXXFLAGS} $< -o $@
+	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@
 
 ${PUGIXMLOBJ}: ${PUGIXMLSRC}
 	@echo
-	${CXX} -c ${CXXFLAGS} $< -o $@
+	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@
 
 # nlohmann's json does not need to be compiled individually
 

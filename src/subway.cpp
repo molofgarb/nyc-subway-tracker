@@ -9,13 +9,15 @@
 
 #include <ctime>
 
-#include "nlohmann/single_include/nlohmann/json.hpp"
+// external includes
+#include <nlohmann/json.hpp>
 
-#include "common.h"
-#include "station.h"
-#include "line.h"
+// nyc-subway-tracker includes
+#include <common.h>
+#include <station.h>
+#include <line.h>
 
-#include "subway.h"
+#include <subway.h>
 
 using st_ptr = std::shared_ptr<Station>;
 

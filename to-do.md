@@ -2,7 +2,8 @@
 
 - add include flags thing to make to make includes nicer
 - add line tables and line-based subway table
-- add custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
+- add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
+- optimize space of sql table by using appropriate types and enforcing quotes on all data
 
 ## **High Priority**
 - subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
