@@ -10,7 +10,8 @@
 
 #include <ctime>
 
-#include "pugixml/src/pugixml.hpp"
+// external includes
+#include <pugixml.hpp>
 
 
 struct Train {

@@ -6,14 +6,16 @@
 
 #include <ctime>
 
-#include "sqlite/sqlite3.h"
+// external includes
+#include <sqlite3.h>
 
-#include "tracker_sqlite.h"
-#include "subway.h"
-#include "line.h"
-#include "station.h"
+// nyc-subway-tracker includes
+#include <tracker_sqlite.h>
+#include <subway.h>
+#include <line.h>
+#include <station.h>
 
-#include "tracker.h"
+#include <tracker.h>
 
 
 namespace tracker {

@@ -9,7 +9,8 @@
 
 #include <ctime>
 
-#include "sqlite/sqlite3.h"
+// external includes
+#include <sqlite3.h>
 
 
 struct Table {

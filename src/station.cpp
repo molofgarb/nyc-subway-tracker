@@ -6,11 +6,13 @@
 
 #include <ctime>
 
-#include "pugixml/src/pugixml.hpp"
+// external includes
+#include <pugixml.hpp>
 
-#include "common.h"
+// nyc-subway-tracker includes
+#include <common.h>
 
-#include "station.h"
+#include <station.h>
 
              
 //Train equality operator

@@ -1,5 +1,5 @@
 <h1 align=center> 
-    <img src="resources/logo-transparent.png" align=center width=50>  nyc-subway-tracker 
+    <img src="resources/logo-centered-transparent.png" align=center width=50>  nyc-subway-tracker 
 </h1>
 <div align=center><img alt="GitHub" src="https://img.shields.io/github/license/molofgarb/nyc-subway-tracker"></div>
 A program that logs the history of the subway train arrival time predictions from https://new.mta.info/.
@@ -13,7 +13,7 @@ Please see the releases section on the right side of the page to download an off
 1. Clone the repository from GitHub.
 2. Initialize the submodules using git submodule update --init
 3. Build libcurl using the curl repository submodule by following the instructions in the GIT-INFO within the repo. Note that autoconf (with m4), automake, libtools, and make is needed to build libcurl. If on macOS with homebrew, install openssl with brew and use the --with-openssl=/opt/homebrew/opt/openssl option when running the configure file.
-4. Build sqlite by renaming Makefile.linux-gcc to Makefile, making any changes in the makefile necessary to suit your environment, and running make. If on windows, make sure to change the EXE variable. If not on windows, then no change is usually needed.
+4. Build sqlite by renaming Makefile.linux-gcc to Makefile, making any changes in the makefile necessary to suit your environment, and running make. If on windows, make sure to change the EXE variable. If not on windows, then no change is usually needed. Alternatively, create a build folder as a child of the sqlite repo and follow the build instructions for Unix systems provided in the README for sqlite.
 5. Run the Makefile in the parent directory of the nyc-subway-tracker repository.
 
 - pugixml is built in the nyc-subway-tracker Makefile. nlohmann's json does not need to be separately compiled.

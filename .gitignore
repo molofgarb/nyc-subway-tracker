@@ -1,8 +1,10 @@
 .vscode
 **/.DS_Store
 
-build
 local
+
+build
+bin
 
 *.json
 *.xml

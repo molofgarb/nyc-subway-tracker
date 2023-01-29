@@ -1,12 +1,14 @@
 #include <iostream>
+#include <cstdio>
 
 #include <string>
 #include <vector>
 
-#include "curl/include/curl/curl.h"
-#include <cstdio>
+// external includes
+#include <curl/curl.h>
 
-#include "common.h"
+// nyc-subway-tracker includes
+#include <common.h>
 
 
 static size_t get_page::write_data(void* dataptr,     //pointer to data from curl
@@ -45,6 +47,7 @@ int get_page::get_page(const std::string& url,
 
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
         res = curl_easy_perform(curl);
+        
         // std::cerr << "<DEBUG getPage.cpp> CURLcode: " << res << "\t URL: " << url << std::endl;
     }
     else return 1;

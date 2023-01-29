@@ -8,13 +8,11 @@
     using namespace std::chrono_literals;
 #include <thread>
 
-// #include "nlohmann/single_include/nlohmann/json.hpp"
-// using json = nlohmann::json;
-
-#include "tracker.h"
-#include "subway.h"
-#include "line.h"
-#include "station.h"
+// nyc-subway-tracker includes
+#include <tracker.h>
+#include <subway.h>
+#include <line.h>
+#include <station.h>
 
 
 int main() {
