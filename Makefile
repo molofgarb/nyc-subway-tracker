@@ -1,51 +1,85 @@
 .PHONY: all remake directories clean cleaner cleandb
 
 # File Extensions
-SRCEXT		:= cpp
-OBJEXT		:= o
-TARGETEXT	:= exe
+SRCEXT			:= cpp
+OBJEXT			:= o
+TARGETEXT		:= exe
 
 # Adjust TARGETEXT based on OS
-ifneq (,$(filter ${shell uname}, Linux Darwin)) #Linux or macOS, WIP
-TARGETEXT 	:= 
+ifneq ($(filter ${shell uname}, Linux Darwin),"") #Linux or macOS, WIP
+    TARGETEXT 	:= 
 endif
 
 # Paths
-SRCPATH 	:= src
-EXTPATH		:= external
-BUILDPATH 	:= build
-TARGETPATH 	:= bin
+SRCPATH 		:= src
+EXTPATH			:= external
+BUILDPATH 		:= build
+TARGETPATH 		:= bin
 
 # Compiler
-CXX 		:= g++
-CXXFLAGS 	:= -std=c++17 -g -O2 #-Wall
-INCFLAGS	:= -I include
+CXX 			:= g++
+CXXFLAGS 		:= -std=c++17 -g -O2 #-Wall
+INCFLAGS		:= -I include
 
 # Includes
-INCFLAGS	+= -I ${EXTPATH}/curl/include
-INCFLAGS	+= -I ${EXTPATH}/nlohmann/single_include
-INCFLAGS	+= -I ${EXTPATH}/pugixml/src
-INCFLAGS	+= -I ${EXTPATH}/sqlite/build			
+INCFLAGS		+= -I ${EXTPATH}/curl/include
+INCFLAGS		+= -I ${EXTPATH}/nlohmann/single_include
+INCFLAGS		+= -I ${EXTPATH}/pugixml/src
+INCFLAGS		+= -I ${EXTPATH}/sqlite/build			
 
 # Build and Link Externals
-PUGIXMLSRC	:= ${EXTPATH}/pugixml/src/pugixml.cpp
-PUGIXMLOBJ	:= ${BUILDPATH}/pugixml.${OBJEXT}
+EXTBUILDS 		:= 
 
-DEPOBJECTS	:= ${PUGIXMLOBJ}
+PUGIXMLSRC		:= ${EXTPATH}/pugixml/src/pugixml.cpp
+PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
 
-LDFLAGS 	:= -L ${EXTPATH}/curl/lib/.libs -l curl 
-LDFLAGS 	+= -L ${EXTPATH}/sqlite/build/.libs -l sqlite3 
+DEPOBJECTS		:= ${PUGIXMLOBJ}
+
+LDFLAGS 		:= -L ${EXTPATH}/curl/lib/.libs -l curl 
+LDFLAGS 		+= -L ${EXTPATH}/sqlite/build/.libs -l sqlite3 
 
 # Build (Project Sources and Objects)
-SOURCES 	:= $(wildcard $(SRCPATH)/*.${SRCEXT})
-OBJECTS 	:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
+SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
+OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
 
 # Target
-TARGET 		:= ${TARGETPATH}/nyc-subway-tracker.${TARGETEXT}
+TARGET 			:= ${TARGETPATH}/nyc-subway-tracker.${TARGETEXT}
 
 # =============================================================================
 
-all: directories ${TARGET}
+ifeq ("$(wildcard $(external/curl/lib/.libs/libcurl.a))","")
+    EXTBUILDS += curl
+endif
+
+ifeq ("$(wildcard $(${BUILDPATH}/pugixml.${OBJEXT}))","")
+    EXTBUILDS += pugixml
+endif
+
+ifeq ("$(wildcard $(${BUILDPATH}/sqlite/sqlite3.h))","")
+    EXTBUILDS += sqlite
+endif
+
+build-external: ${EXTBUILDS}
+	
+curl: #built in-place
+	@echo
+	cd external/curl
+	autoreconf -fi
+	./configure
+	make
+
+pugixml: ${PUGIXMLSRC}
+	@echo
+	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLOBJ}
+
+sqlite:
+	@echo
+	mkdir ${BUILDPATH}/sqlite
+	cd ${BUILDPATH}/sqlite
+
+# =============================================================================
+
+all: directories build-external ${TARGET}
 
 ${TARGET}: ${OBJECTS} ${DEPOBJECTS}
 	@echo 
