@@ -1,14 +1,9 @@
-.PHONY: all remake directories clean cleaner cleandb
+.PHONY: all build-external curl pugixml sqlite remake directories clean cleaner cleandb
 
 # File Extensions
 SRCEXT			:= cpp
 OBJEXT			:= o
-TARGETEXT		:= exe
-
-# Adjust TARGETEXT based on OS
-ifneq ($(filter ${shell uname}, Linux Darwin),"") #Linux or macOS, WIP
-    TARGETEXT 	:= 
-endif
+TARGETEXT		:= ...
 
 # Paths
 SRCPATH 		:= src
@@ -25,10 +20,11 @@ INCFLAGS		:= -I include
 INCFLAGS		+= -I ${EXTPATH}/curl/include
 INCFLAGS		+= -I ${EXTPATH}/nlohmann/single_include
 INCFLAGS		+= -I ${EXTPATH}/pugixml/src
-INCFLAGS		+= -I ${EXTPATH}/sqlite/build			
+INCFLAGS		+= -I ${BUILDPATH}/sqlite/build			
 
 # Build and Link Externals
 EXTBUILDS 		:= 
+OPENSSLFLAG		:= ...
 
 PUGIXMLSRC		:= ${EXTPATH}/pugixml/src/pugixml.cpp
 PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
@@ -36,14 +32,37 @@ PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
 DEPOBJECTS		:= ${PUGIXMLOBJ}
 
 LDFLAGS 		:= -L ${EXTPATH}/curl/lib/.libs -l curl 
-LDFLAGS 		+= -L ${EXTPATH}/sqlite/build/.libs -l sqlite3 
+LDFLAGS 		+= -L ${BUILDPATH}/sqlite/.libs -l sqlite3 
 
 # Build (Project Sources and Objects)
 SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
 OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
 
+# Adjust Variables depending on Environment
+ifneq ($(filter ${shell uname}, Linux Darwin),"") #Linux or macOS
+    TARGETEXT 	:= 
+    OPENSSLFLAG	:= --with-openssl=/opt/homebrew/opt/openssl
+else
+    TARGETEXT 	:= .exe
+    OPENSSLFLAG	:= --with-openssl
+endif
+
 # Target
-TARGET 			:= ${TARGETPATH}/nyc-subway-tracker.${TARGETEXT}
+TARGET 			:= ${TARGETPATH}/nyc-subway-tracker${TARGETEXT}
+
+# =============================================================================
+
+all: directories build-external ${TARGET}
+
+${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
+	@echo 
+	${CXX} ${CXXFLAGS} ${INCFLAGS} $^ ${LDFLAGS} -o $@
+
+${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
+	@echo
+	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@
+
+# nlohmann's json does not need to be compiled individually
 
 # =============================================================================
 
@@ -59,14 +78,14 @@ ifeq ("$(wildcard $(${BUILDPATH}/sqlite/sqlite3.h))","")
     EXTBUILDS += sqlite
 endif
 
-build-external: ${EXTBUILDS}
+build-external: directories ${EXTBUILDS}
 	
 curl: #built in-place
 	@echo
-	cd external/curl
-	autoreconf -fi
-	./configure
-	make
+	cd ${EXTPATH}/curl; \
+	autoreconf -fi; \
+	./configure ${OPENSSLFLAG}; \
+	make; 
 
 pugixml: ${PUGIXMLSRC}
 	@echo
@@ -74,26 +93,12 @@ pugixml: ${PUGIXMLSRC}
 
 sqlite:
 	@echo
-	mkdir ${BUILDPATH}/sqlite
-	cd ${BUILDPATH}/sqlite
-
-# =============================================================================
-
-all: directories build-external ${TARGET}
-
-${TARGET}: ${OBJECTS} ${DEPOBJECTS}
-	@echo 
-	${CXX} ${CXXFLAGS} ${INCFLAGS} $^ ${LDFLAGS} -o $@
-
-${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
-	@echo
-	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@
-
-${PUGIXMLOBJ}: ${PUGIXMLSRC}
-	@echo
-	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@
-
-# nlohmann's json does not need to be compiled individually
+	mkdir ${BUILDPATH}/sqlite; \
+	cd ${BUILDPATH}/sqlite; \
+	../../${EXTPATH}/sqlite/configure; \
+	make; \
+	make sqlite3.c;
+	echo DONE DONE DONE WITH SQLITE and target is ${TARGET}
 
 # =============================================================================
 
