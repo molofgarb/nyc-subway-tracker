@@ -31,7 +31,7 @@ PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
 
 DEPOBJECTS		:= ${PUGIXMLOBJ}
 
-LDFLAGS 		:= -L ${EXTPATH}/curl/lib/.libs -l curl 
+LDFLAGS 		:= -L ${BUILDPATH}/curl/lib/.libs -l curl 
 LDFLAGS 		+= -L ${BUILDPATH}/sqlite/.libs -l sqlite3 
 
 # Build (Project Sources and Objects)
@@ -55,12 +55,12 @@ TARGET 			:= ${TARGETPATH}/nyc-subway-tracker${TARGETEXT}
 all: directories build-external ${TARGET}
 
 ${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
-	@echo 
-	${CXX} ${CXXFLAGS} ${INCFLAGS} $^ ${LDFLAGS} -o $@
+	@echo building ${TARGET}... "\n"
+	@${CXX} ${CXXFLAGS} ${INCFLAGS} $^ ${LDFLAGS} -o $@ ||:
 
 ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
-	@echo
-	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@
+	@echo building $<... "\n"
+	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@ ||:
 
 # nlohmann's json does not need to be compiled individually
 
@@ -81,38 +81,42 @@ endif
 build-external: directories ${EXTBUILDS}
 	
 curl: #built in-place
-	@echo
-	cd ${EXTPATH}/curl; \
-	autoreconf -fi; \
-	./configure ${OPENSSLFLAG}; \
-	make; 
+	@echo building curl... "\n"
+	@cd ${EXTPATH}/curl ||:; \
+	autoreconf -fi ||:; \
+	cd ../.. ||:; \
+	mkdir ${BUILDPATH}/curl ||:; \
+	cd ${BUILDPATH}/curl ||:; \
+	../../${EXTPATH}/curl/configure ${OPENSSLFLAG} ||:; \
+	make ||:; 
 
 pugixml: ${PUGIXMLSRC}
-	@echo
-	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLOBJ}
+	@echo building pugixml... "\n"
+	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLOBJ} ||:
 
 sqlite:
-	@echo
-	mkdir ${BUILDPATH}/sqlite; \
-	cd ${BUILDPATH}/sqlite; \
-	../../${EXTPATH}/sqlite/configure; \
-	make; \
-	make sqlite3.c;
-	echo DONE DONE DONE WITH SQLITE and target is ${TARGET}
+	@echo building sqlite... "\n"
+	mkdir ${BUILDPATH}/sqlite ||:; \
+	cd ${BUILDPATH}/sqlite ||:; \
+	../../${EXTPATH}/sqlite/configure ||:; \
+	make ||:; \
+	make sqlite3.c ||:;
 
 # =============================================================================
 
 remake: cleaner all
 
 directories:
-	-mkdir ${BUILDPATH}
-	-mkdir ${TARGETPATH}
+	@mkdir ${BUILDPATH} ||:
+	@mkdir ${TARGETPATH} ||:
 
 clean: 
-	-rm -f ${BUILDPATH}
-
-cleaner: 
 	-rm -rf ${BUILDPATH}
+	@echo cleaning curl...
+	@cd ${EXTPATH}/curl ||:; \
+	git clean -fdx ||:; \
+
+cleaner: clean
 	-rm -rf ${TARGETPATH}
 
 cleandb:
