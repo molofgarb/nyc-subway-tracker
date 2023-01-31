@@ -6,7 +6,7 @@
 - optimize space of sql table by using appropriate types and enforcing quotes on all data
 
 ## **High Priority**
-- subway-tracker.exe and subway-history-view.exe as separate programs to interact with subway.db
+- subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
 - exceptions for table operations in tracker - what if row/table doesn't exist?
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
