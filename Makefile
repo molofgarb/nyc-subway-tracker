@@ -48,18 +48,20 @@ else
 endif
 
 # Target
-TARGET 			:= ${TARGETPATH}/nyc-subway-tracker${TARGETEXT}
+TARGET 			:= ${TARGETPATH}/subway-logger${TARGETEXT}
 
 # =============================================================================
 
 all: directories build-external ${TARGET}
 
 ${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
-	@echo building ${TARGET}... "\n"
+	@echo building ${TARGET}...
+	@echo
 	@${CXX} ${CXXFLAGS} ${INCFLAGS} $^ ${LDFLAGS} -o $@ ||:
 
 ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
-	@echo building $<... "\n"
+	@echo building $<...
+	@echo
 	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@ ||:
 
 # nlohmann's json does not need to be compiled individually
@@ -81,7 +83,8 @@ endif
 build-external: directories ${EXTBUILDS}
 	
 curl: #built in-place
-	@echo building curl... "\n"
+	@echo building curl...
+	@echo
 	@cd ${EXTPATH}/curl ||:; \
 	autoreconf -fi ||:; \
 	cd ../.. ||:; \
@@ -91,11 +94,13 @@ curl: #built in-place
 	make ||:; 
 
 pugixml: ${PUGIXMLSRC}
-	@echo building pugixml... "\n"
+	@echo building pugixml...
+	@echo
 	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLOBJ} ||:
 
 sqlite:
-	@echo building sqlite... "\n"
+	@echo building sqlite...
+	@echo
 	mkdir ${BUILDPATH}/sqlite ||:; \
 	cd ${BUILDPATH}/sqlite ||:; \
 	../../${EXTPATH}/sqlite/configure ||:; \
