@@ -1,7 +1,6 @@
 # To-do:
 
 - move constants to src files
-- add include flags thing to make to make includes nicer
 - add line tables and line-based subway table
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
 - optimize space of sql table by using appropriate types and enforcing quotes on all data
@@ -26,6 +25,7 @@
 
 
 ## Completed
+- add include flags thing to make to make includes nicer
 - getPage into string to reduce overhead
 - log time in db for arrival as normal format instead of unix
 - fix time until arrival bug in tracker and station
