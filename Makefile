@@ -48,7 +48,7 @@ else
 endif
 
 # Target
-TARGET 			:= ${TARGETPATH}/nyc-subway-tracker${TARGETEXT}
+TARGET 			:= ${TARGETPATH}/subway-logger${TARGETEXT}
 
 # =============================================================================
 
