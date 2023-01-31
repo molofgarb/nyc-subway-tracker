@@ -82,7 +82,7 @@ endif
 
 build-external: directories ${EXTBUILDS}
 	
-curl: #built in-place
+curl:
 	@echo building curl...
 	@echo
 	@cd ${EXTPATH}/curl ||:; \
