@@ -13,7 +13,7 @@
   - support empty stationMap/stationtypes if line used in main script instead of subway
 
 ## **Medium Priority**
-- compile submodules as part of make
+- delete oldest records if db file is too big
 - make subway output nicer (multiple files in a directory option)
 - exception handling
 
@@ -25,6 +25,7 @@
 
 
 ## Completed
+- compile submodules as part of make
 - add include flags thing to make to make includes nicer
 - getPage into string to reduce overhead
 - log time in db for arrival as normal format instead of unix

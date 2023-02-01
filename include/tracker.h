@@ -22,6 +22,8 @@
 namespace constant {
     const std::string DB_NAME = "nyc-subway-tracker.db";
 
+    //-------------------------------------------------------------------------
+
     const std::string SNAPSHOT_TABLE_NAME = "Subway_Snapshots";
     const std::vector<std::pair<std::string, std::string>> SNAPSHOT_COLUMNS = { // ex) Subway Stations
         std::make_pair("Subway_Snapshot", "TEXT"), // ex) Subway_1673908573
@@ -32,10 +34,14 @@ namespace constant {
         SNAPSHOT_COLUMNS
     );
 
-    const std::vector<std::pair<std::string, std::string>> SUBWAY_STATIONS_COLUMNS = { // ex) Subway_1673908573
+    //-------------------------------------------------------------------------
+
+    
+    const std::vector<std::pair<std::string, std::string>> SUBWAY_STATIONS_COLUMNS = { // ex) Subway_Stations_1673908573
         std::make_pair("StopID_and_Time", "TEXT"), // ex) G14_1673908573
         std::make_pair("StopID", "TEXT"), // ex) G14
-        std::make_pair("Name", "TEXT") // ex) Roosevelt Av
+        std::make_pair("Name", "TEXT"), // ex) Roosevelt Av
+        std::make_pair("Time", "INTEGER") // ex) Roosevelt Av
     };
 
     const std::vector<std::pair<std::string, std::string>> STATION_COLUMNS = { // ex) Station_G14_1673908573
@@ -47,17 +53,21 @@ namespace constant {
         std::make_pair("Direction_ID", "INTEGER") // ex) 1
     };
 
-    // const std::vector<std::pair<std::string, std::string>> LINE_COLUMNS = { // ex) F 1673908573
-    //     std::make_pair("StopID & Time", "TINYTEXT")
-    // };
+    //-------------------------------------------------------------------------
 
-    // const std::vector<std::pair<std::string, std::string>> SUBWAY_LINES_COLUMNS = { // ex) Lines 1673908573
+    /* notice that this acts as one big line with every station, so it can be
+       used to store a subway snapshot by station by pretending that the system
+       is a line 
+    */
 
-    // }
+    const std::vector<std::pair<std::string, std::string>> LINES_COLUMNS(SUBWAY_STATIONS_COLUMNS);
 
-    // const std::vector<std::pair<std::string, std::string>> SNAPSHOT_LINES_COLUMNS = { //ex) Subway Snapshots
-    //     std::make_pair("Subway Snapshot", "TIME(0)"), // ex) Stations 1673908573 ...OR... Lines 1673908573
-    // };
+    const std::vector<std::pair<std::string, std::string>> SUBWAY_LINES_COLUMNS = { // ex) Subway_Lines_1673908573
+        std::make_pair("Line_and_Time", "TEXT"), // ex) F_1673908573
+        std::make_pair("Line", "TEXT"), // ex) F
+        std::make_pair("Time", "INTEGER") // ex) 1673908573
+    };
+
 }
 
 namespace tracker {

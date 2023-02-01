@@ -30,6 +30,7 @@ sqlite3* subway_db_initialize(sqlite3* db) {
 }
 
 //takes a snapshot -- adds current system status table into db snapshot
+//Creates table Subway_Snapshots using constant::SNAPSHOT_TABLE
 sqlite3* snapshot(const Subway& subway, sqlite3* db) {
     std::vector<std::string> data{
         tracker::subway_snapshot(subway, db),
@@ -41,6 +42,7 @@ sqlite3* snapshot(const Subway& subway, sqlite3* db) {
 } 
 
 //logs current subway system status as a table with station snapshots as contents
+//Creates tables like Subway_Stations_1673908573 using constant::SUBWAY_STATIONS_COLUMNS
 const std::string subway_snapshot(const Subway& subway, sqlite3* db) {
     if (db == nullptr) { //db doesnt exist
         std::cerr << "<error> no db at subway_snapshot" << std::endl;
@@ -48,7 +50,7 @@ const std::string subway_snapshot(const Subway& subway, sqlite3* db) {
 
     //make table for subway system
     time_t time = std::time(nullptr); //time right now
-    const std::string tableName = "Subway_" + std::to_string((int)time);
+    const std::string tableName = "Subway_Stations_" + std::to_string((int)time);
     Table table(
         tableName,
         constant::SUBWAY_STATIONS_COLUMNS
@@ -70,6 +72,7 @@ const std::string subway_snapshot(const Subway& subway, sqlite3* db) {
 }
 
 //logs current station status as a table with nearby arrivals as contents
+//Creates tables like Station_G14_1673908573 using constant::STATION_COLUMNS
 const std::string station_snapshot(const Station& station, sqlite3* db) {
     if (db == nullptr) {
         std::cerr << "<error> no db at station_snapshot" << std::endl;
