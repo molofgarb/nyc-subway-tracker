@@ -125,7 +125,7 @@ cleaner: clean
 	-rm -rf ${TARGETPATH}
 
 cleandb:
-	-rm -f ${BUILDPATH}/nyc-subway-tracker.db
+	-rm -f nyc-subway-tracker.db
 
 # =============================================================================
 # Unused

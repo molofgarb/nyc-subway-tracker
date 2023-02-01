@@ -24,8 +24,8 @@ namespace constant {
 
     const std::string SNAPSHOT_TABLE_NAME = "Subway_Snapshots";
     const std::vector<std::pair<std::string, std::string>> SNAPSHOT_COLUMNS = { // ex) Subway Stations
-        std::make_pair("Subway_Snapshot", "TINYTEXT"), // ex) Subway_1673908573
-        std::make_pair("Time", "BIGINT(16)"), // ex) 1673908573
+        std::make_pair("Subway_Snapshot", "TEXT"), // ex) Subway_1673908573
+        std::make_pair("Time", "INTEGER"), // ex) 1673908573
     };
     const Table SNAPSHOT_TABLE(
         SNAPSHOT_TABLE_NAME,
@@ -33,18 +33,18 @@ namespace constant {
     );
 
     const std::vector<std::pair<std::string, std::string>> SUBWAY_STATIONS_COLUMNS = { // ex) Subway_1673908573
-        std::make_pair("StopID_and_Time", "TINYTEXT"), // ex) G14_1673908573
-        std::make_pair("StopID", "TINYTEXT"), // ex) G14
-        std::make_pair("Name", "TINYTEXT") // ex) Roosevelt Av
+        std::make_pair("StopID_and_Time", "TEXT"), // ex) G14_1673908573
+        std::make_pair("StopID", "TEXT"), // ex) G14
+        std::make_pair("Name", "TEXT") // ex) Roosevelt Av
     };
 
     const std::vector<std::pair<std::string, std::string>> STATION_COLUMNS = { // ex) Station_G14_1673908573
-        std::make_pair("Name_and_Time", "TINYTEXT"), // ex) F_1673909000
-        std::make_pair("Name", "TINYTEXT"), // ex) F
-        std::make_pair("Time_Until_Arrival", "TINYTEXT"), //ex) 05:33
-        std::make_pair("Time_of_Arrival", "TINYTEXT"), // ex) 12:28:00;
-        std::make_pair("Time_of_Arrival_Unix", "TINYTEXT"), // ex) 1673909000
-        std::make_pair("Direction_ID", "TINYTEXT") // ex) 1
+        std::make_pair("Name_and_Time", "TEXT"), // ex) F_1673909000
+        std::make_pair("Name", "TEXT"), // ex) F
+        std::make_pair("Time_Until_Arrival", "TEXT"), //ex) 05:33
+        std::make_pair("Time_of_Arrival", "TEXT"), // ex) 12:28:00;
+        std::make_pair("Time_of_Arrival_Unix", "INTEGER"), // ex) 1673909000
+        std::make_pair("Direction_ID", "INTEGER") // ex) 1
     };
 
     // const std::vector<std::pair<std::string, std::string>> LINE_COLUMNS = { // ex) F 1673908573

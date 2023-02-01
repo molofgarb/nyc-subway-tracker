@@ -1,8 +1,9 @@
 # To-do:
 
+- optimize space of sql table by using appropriate types and enforcing quotes on all data
+
 - add line tables and line-based subway table
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
-- optimize space of sql table by using appropriate types and enforcing quotes on all data
 
 ## **High Priority**
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
