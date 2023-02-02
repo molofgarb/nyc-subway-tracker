@@ -1,9 +1,10 @@
 # To-do:
 
 - move constants to src files
+- optimize space of sql table by using appropriate types and enforcing quotes on all data
+
 - add line tables and line-based subway table
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
-- optimize space of sql table by using appropriate types and enforcing quotes on all data
 
 ## **High Priority**
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
@@ -13,7 +14,7 @@
   - support empty stationMap/stationtypes if line used in main script instead of subway
 
 ## **Medium Priority**
-- compile submodules as part of make
+- delete oldest records if db file is too big
 - make subway output nicer (multiple files in a directory option)
 - exception handling
 
@@ -25,6 +26,7 @@
 
 
 ## Completed
+- compile submodules as part of make
 - add include flags thing to make to make includes nicer
 - getPage into string to reduce overhead
 - log time in db for arrival as normal format instead of unix
