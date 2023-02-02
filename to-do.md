@@ -1,6 +1,5 @@
 # To-do:
 
-- move constants to src files
 - optimize space of sql table by using appropriate types and enforcing quotes on all data
 
 - add line tables and line-based subway table
