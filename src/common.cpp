@@ -17,7 +17,7 @@ static size_t get_page::write_data(void* dataptr,     //pointer to data from cur
     return size * nmemb;
 }
 
-void get_page::getPage(const std::string& url, 
+int get_page::get_page(const std::string& url, 
                        const std::vector<std::string>& headers, 
                        std::string& data) {
     CURL* curl = curl_easy_init();
@@ -45,6 +45,7 @@ void get_page::getPage(const std::string& url,
         res = curl_easy_perform(curl);
         // std::cout << "<DEBUG getPage.cpp> CURLcode: " << res << "\t URL: " << url << std::endl;
     }
+    else return 1;
 
     //clean
     curl_slist_free_all(full_header);
