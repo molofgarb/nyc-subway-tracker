@@ -3,7 +3,7 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -O2 -I/opt/homebrew/Cellar/sqlite/3.40.1/include
 LDFLAGS := -L ./src/curl/lib/.libs -l curl # libcurl
-LDFLAGS += -L/opt/homebrew/Cellar/sqlite/3.40.1/lib -l sqlite3 # sqlite3
+LDFLAGS += -L ./src/sqlite -l sqlite3 # sqlite3
 # LDFLAGS: libcurl library
 
 TARGET := nyc-subway-tracker.exe
