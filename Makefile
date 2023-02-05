@@ -1,10 +1,8 @@
 .PHONY: all clean
 
 CC := g++
-FLAGS := -std=c++17
+FLAGS := -std=c++17 -O2
 LINKS := -L .\src\curl\lib\.libs -l libcurl
-# LINKS := -I .\src\curl\lib\.libs\*.a -I .\src\curl\lib\.libs\*.o -l libcurl
-# LINKS := -L C:\Users\Nathan\Documents\!Repos\nyc-subway-tracker\src\curl\lib\.libs -l libcurl
 # links to libcurl library
 
 TARGET := main.exe
