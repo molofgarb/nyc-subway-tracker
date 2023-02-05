@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+
 #include <ctime>
 
 #include "nlohmann/single_include/nlohmann/json.hpp"
@@ -135,9 +136,9 @@ std::string Line::getID() const {
 std::ostream& operator<<(std::ostream& os, const Line& rhs) {
     if (rhs.stations.size() == 0) return os;
     os << "Below are the statuses for each station on the " <<
-           rhs.name << ":\n" << std::endl;
+           rhs.name << ":\n\n";
     for (Station* station : rhs.stations) {
-        os << *station << std::endl;
+        os << *station << '\n';
     }
-    return os;
+    return os << '\n';
 }

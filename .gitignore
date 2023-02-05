@@ -2,11 +2,9 @@
 notes
 
 *.json
+.xml
 *.txt
 *.stackdump
-
-main
-src/misc/routes_fix
 
 # Prerequisites
 *.d

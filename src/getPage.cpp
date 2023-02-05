@@ -1,8 +1,10 @@
 #include <iostream>
-#include <stdio.h>
+
+#include <cstdio>
 #include <curl/curl.h>
 
 #include <string>
+#include <vector>
 
 #include "getPage.h"
 
