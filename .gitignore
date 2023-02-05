@@ -1,6 +1,9 @@
 .vscode
 notes
 
+main
+src/misc/routes_fix
+
 # Prerequisites
 *.d
 

@@ -50,14 +50,13 @@ int main() {
             std::getline(inFile, currLine);
         }
         else {// not empty
-            if (currLine == "{") {
+            if (currLine == "{") { 
                 outFile << (comma ? ",\n" : "") << currLine << std::endl;
-                comma = true;
+                comma = true; // do nothing for first {
             }
-            else if (currLine.substr(0, 1) != "}")
-                outFile << currLine << std::endl;
-            else if (currLine.substr(0, 1) == "}")
-                outFile << "}";
+            else
+                //if } then }, otherwise if data then pass data and line break
+                outFile << ((currLine.substr(0, 1) == "}") ? "}" : (currLine + '\n'));
             currLine = nextLine;
         }
     }
