@@ -7,27 +7,28 @@
 // #include "nlohmann/single_include/nlohmann/json.hpp"
 // using json = nlohmann::json;
 
+#include "subway.h"
 #include "station.h"
 #include "line.h"
 
 
-
 int main() {
-    std::vector<std::string> trainChars;
-    for (size_t i = 0; i < 10; i++) trainChars.push_back(std::to_string(int(i))); //single-digit integers
-    for (char i = 'A'; i < '['; i++) trainChars.push_back(std::string(1, i)); //capital letters A-Z
-    // for (std::string i : trainChars) std::cout << i << std::endl;
+    // ===== FOR STATION--LINE TESTS ==========================================
 
-    std::vector<Train*> trainTypes;
-    for (size_t i = 0; i < (trainChars.size() * 2); i++) {
-        trainTypes.push_back(
-            new Train(
-                trainChars[i % trainChars.size()], 
-                int(i / trainChars.size())
-            )
-        );
-    }
-    
+    // std::vector<std::string> trainChars;
+    // for (size_t i = 0; i < 10; i++) trainChars.push_back(std::to_string(int(i))); //single-digit integers
+    // for (char i = 'A'; i < '['; i++) trainChars.push_back(std::string(1, i)); //capital letters A-Z
+    // // for (std::string i : trainChars) std::cout << i << std::endl;
+
+    // std::vector<Train*> trainTypes;
+    // for (size_t i = 0; i < (trainChars.size() * 2); i++) {
+    //     trainTypes.push_back(
+    //         new Train(
+    //             trainChars[i % trainChars.size()], 
+    //             int(i / trainChars.size())
+    //         )
+    //     );
+    // }
 
     // ===== STATION TEST =====================================================
 
@@ -47,16 +48,33 @@ int main() {
 
     // ===== LINE TEST ========================================================
 
-    Line line("F", &trainTypes);
-    line.update();
-    std::cout << line << std::endl;
+    // Line line("F", &trainTypes);
+    // line.update();
+    // std::cout << line << std::endl;
 
-    // ===== CLEAN UP =========================================================
+    // ===== SUBWAY TEST ======================================================
 
-    for (Train* train : trainTypes) {
-        delete train;
-        train = nullptr;
-    }
-    trainTypes.clear();
-    trainChars.clear();
+    Subway subway;
+    std::ofstream file("subway.txt");
+    subway.update();
+    file << subway << std::endl;
+
+    // //debug for test
+    // while (true) {
+    //     std::cout << "Input: ";
+    //     std::string input;
+    //     std::cin >> input;
+    //     subway.debug(input);
+    //     std::cout << std::endl;
+    // }
+
+    // ===== CLEAN UP FOR STATION--LINE TESTS =================================
+
+    // for (Train* train : trainTypes) {
+    //     delete train;
+    //     train = nullptr;
+    // }
+    // trainTypes.clear();
+    // trainChars.clear();
+
 }

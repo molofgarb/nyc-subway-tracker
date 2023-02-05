@@ -66,5 +66,5 @@ int main() {
     outFile.close();
 
     std::remove("temp_routes.json");
-    std::cout << "done";
+    // std::cout << "done";
 }
