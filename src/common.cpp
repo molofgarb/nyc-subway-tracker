@@ -37,7 +37,9 @@ int get_page::get_page(const std::string& url,
         curl_easy_setopt(curl, CURLOPT_URL, url.data());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, full_header);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, get_page::write_data);
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, ""); //could make it faster
 
+        // <DEBUG>
         // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 

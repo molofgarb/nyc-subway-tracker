@@ -46,12 +46,11 @@ namespace sql {
     sqlite3* create_db(const std::string& db_name);
     sqlite3* open_db(const std::string& db_name);
 
-    sqlite3* create_table(sqlite3* db, const Table& table);
-    sqlite3* copy_table(sqlite3* db, const Table& oldTable, const Table& newTable);
+    sqlite3* create_new_table(sqlite3* db, const Table& table);
 
-    sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<std::string> row);
-    sqlite3* delete_row(sqlite3* db, const Table& table, const std::vector<std::string> row);
-    sqlite3* get_row(sqlite3* db, const Table& table, const std::vector<std::string> row);
+    sqlite3* insert_row(sqlite3* db, const Table& table, const Row& row);
+    sqlite3* delete_row(sqlite3* db, const Table& table, const Row& row);
+    sqlite3* get_row(sqlite3* db, const Table& table, const Row& row);
 }
 
 

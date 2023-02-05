@@ -1,7 +1,7 @@
 # To-do:
 
 ## **High Priority**
-- fix const structs with useless functions
+- make sure that sqlite3 gets linked properly
 - make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
 - support use of line and station by itself (need to rework destructor)
   - support empty stationMap/stationtypes if line used in main script instead of subway
@@ -21,6 +21,8 @@
 
 
 ## Completed
+- make sure that environment is detected correctly in makefile
+- fix const structs with useless functions
 - fix multiple options for subway output
 - have station output say when it was checked in output operator
 - format time more nicely
