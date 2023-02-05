@@ -23,6 +23,14 @@ struct Table {
     std::vector<std::pair<std::string, std::string>> columns; //name, data type
 };
 
+struct Row {
+    Row(const std::vector<std::pair<std::string, std::string>>& columns,
+        const std::vector<std::string>& data): columns(columns), data(data) {}
+
+    std::vector<std::pair<std::string, std::string>> columns;
+    std::vector<std::string> data;
+};
+
 namespace tracker {
     void subway_initialize();
     void subway_update();
