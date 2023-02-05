@@ -19,3 +19,6 @@ Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - routes (for ALL forms of transport - static) 
 qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP - stopsForRoute (after clicking on a train - static)
   https://collector-otp-prod.camsys-apps.com/schedule/MTASBWY/stopsForRoute?apikey=qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP&&routeId=MTASBWY:<LINE DESIGNATION>
 Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - nearby (after clicking on a stop - dynamic)
+  https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY%3AG14&apikey=Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE
+  - above is example nearby for roosevelt av in queens
+  https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY%3A<STOP ID CODE (stopsForRoute)>&apikey=Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE
