@@ -22,7 +22,7 @@ public:
     std::string getName();
 private:
     //outputs nearby trains
-    friend std::ostream& operator<<(std::ostream& os, Station& rhs);
+    friend std::ostream& operator<<(std::ostream& os, const Station& rhs);
 
     std::string name;
     std::vector<Station::Train*> nearby;
