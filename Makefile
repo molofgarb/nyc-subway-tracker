@@ -3,7 +3,7 @@
 # File Extensions
 SRCEXT			:= cpp
 OBJEXT			:= o
-TARGETEXT		:= ...
+TARGETEXT		:= 
 
 # Paths
 SRCPATH 		:= src
@@ -17,14 +17,14 @@ CXXFLAGS 		:= -std=c++17 -g -O2 #-Wall
 INCFLAGS		:= -I include
 
 # Includes
-INCFLAGS		+= -I ${EXTPATH}/curl/include
-INCFLAGS		+= -I ${EXTPATH}/nlohmann/single_include
-INCFLAGS		+= -I ${EXTPATH}/pugixml/src
-INCFLAGS		+= -I ${BUILDPATH}/sqlite/build			
+INCFLAGS		+= -I ${EXTPATH}/curl/include \
+				   -I ${EXTPATH}/nlohmann/single_include \
+				   -I ${EXTPATH}/pugixml/src \
+				   -I ${BUILDPATH}/sqlite			
 
 # Build and Link Externals
 EXTBUILDS 		:= 
-OPENSSLFLAG		:= ...
+OPENSSLFLAG		:= 
 
 PUGIXMLSRC		:= ${EXTPATH}/pugixml/src/pugixml.cpp
 PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
@@ -39,11 +39,14 @@ SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
 OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
 
 # Adjust Variables depending on Environment
-ifneq ($(filter ${shell uname}, Linux Darwin),"") #Linux or macOS
+ifeq ($(filter ${shell uname}, Linux),"") #Linux
+    TARGETEXT 	:= 
+    OPENSSLFLAG	:= --with-openssl
+else ifeq ($(filter ${shell uname}, Darwin),"") #macOS
     TARGETEXT 	:= 
     OPENSSLFLAG	:= --with-openssl=/opt/homebrew/opt/openssl
-else
-    TARGETEXT 	:= .exe
+else #Windows
+	TARGETEXT 	:= .exe
     OPENSSLFLAG	:= --with-openssl
 endif
 
@@ -51,7 +54,6 @@ endif
 TARGET 			:= ${TARGETPATH}/subway-logger${TARGETEXT}
 
 # =============================================================================
-
 all: directories build-external ${TARGET}
 
 ${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
@@ -68,15 +70,16 @@ ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
 
 # =============================================================================
 
-ifeq ("$(wildcard $(external/curl/lib/.libs/libcurl.a))","")
+# Find Which Libraries Need to Be Built
+ifeq ($(wildcard ${BUILDPATH}/curl/lib/.libs/libcurl.a),)
     EXTBUILDS += curl
 endif
 
-ifeq ("$(wildcard $(${BUILDPATH}/pugixml.${OBJEXT}))","")
+ifeq ($(wildcard ${BUILDPATH}/pugixml.${OBJEXT}),)
     EXTBUILDS += pugixml
 endif
 
-ifeq ("$(wildcard $(${BUILDPATH}/sqlite/sqlite3.h))","")
+ifeq ($(wildcard ${BUILDPATH}/sqlite/sqlite3.h),)
     EXTBUILDS += sqlite
 endif
 
@@ -101,7 +104,7 @@ pugixml: ${PUGIXMLSRC}
 sqlite:
 	@echo building sqlite...
 	@echo
-	mkdir ${BUILDPATH}/sqlite ||:; \
+	@mkdir ${BUILDPATH}/sqlite ||:; \
 	cd ${BUILDPATH}/sqlite ||:; \
 	../../${EXTPATH}/sqlite/configure ||:; \
 	make ||:; \

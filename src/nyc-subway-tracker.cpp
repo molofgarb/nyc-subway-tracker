@@ -106,6 +106,8 @@ int main() {
     //     std::this_thread::sleep_for(1min); //wait for 1 min before next update
     // }
 
+    std::cout << "All snapshot data can be found in " + constant::DB_NAME << std::endl;
+
     // ===== CLEAN UP FOR STATION--LINE TESTS =================================
 
     // for (Train* train : trainTypes) {
