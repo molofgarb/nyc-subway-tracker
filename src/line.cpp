@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <iostream>
 #include <fstream>
 
@@ -8,35 +10,35 @@
 
 #include "nlohmann/single_include/nlohmann/json.hpp"
 
-#include "getPage.h"
+#include "common.h"
 #include "Station.h"
 
 #include "Line.h"
+
+using st_ptr = std::shared_ptr<Station>;
 
 
 // constructor
 Line::Line(const std::string& name,
            const std::string& ID, 
            const std::map<Train*, int>* trainTypes,
-           std::map<std::string, Station*>* allStations //boss of line
+           std::map<std::string, st_ptr>* allStations //boss of line
     ): name(name), ID(ID), trainTypes(trainTypes) {
     const std::string url = constant::LINE_URL + ID;
     const std::vector<std::string> headers{
         "apikey: " + constant::LINE_API_KEY,
     };
-    const std::string outFile = "lineTemp.json";
-    get_page::getPage(url, headers, outFile);
-    parseLineJSON(outFile, trainTypes, allStations);
-    std::remove("lineTemp.json");
+    std::string jsonData = "";
+    get_page::getPage(url, headers, jsonData);
+    parseLineJSON(jsonData, trainTypes, allStations);
 }
 
 // populates stations with a station pointer for each station in lineTemp.json
-void Line::parseLineJSON(const std::string& filename, 
+void Line::parseLineJSON(std::string& jsonData, 
                        const std::map<Train*, int>* trainTypes, 
-                       std::map<std::string, Station*>* allStations
+                       std::map<std::string, st_ptr>* allStations
     ) {
-    std::ifstream file(filename);
-    nlohmann::json data = nlohmann::json::parse(file);
+    nlohmann::json data = nlohmann::json::parse(jsonData);
     
     // create a Station for each station in data
     for (const nlohmann::json stationData : data) {
@@ -44,10 +46,12 @@ void Line::parseLineJSON(const std::string& filename,
         if (allStations->find(stationID) != allStations->end()) { //station exists in allStations
             stations.push_back(allStations->at(stationID));
         } else { //station does not exist in allStations
-            Station* station = new Station(
-                stationData["stopName"],
-                stationID,
-                trainTypes
+            st_ptr station = st_ptr(
+                new Station(
+                    stationData["stopName"],
+                    stationID,
+                    trainTypes
+                )
             );
             stations.push_back(station); //add to line's list of stations
             (*allStations)[stationID] = station; //add to all stations list kept by subway
@@ -57,71 +61,39 @@ void Line::parseLineJSON(const std::string& filename,
 
 // copy constructor
 Line::Line(const Line& other):
-    name(other.name), ID(other.ID), stations(other.stations), trainTypes(other.trainTypes) {}
+           name(other.name), ID(other.ID), trainTypes(other.trainTypes) {
+    for (auto station_ptr : other.stations) {
+        st_ptr station = st_ptr(new Station(*station_ptr));
+        stations.push_back(station);
+    }
+}
 
 // assignment operator
 Line& Line::operator=(const Line& other) {
     if (this != &other) {
         name = other.name;
         ID = other.ID;
-        stations = other.stations;
         trainTypes = other.trainTypes;
+        for (auto station_ptr : other.stations) {
+            st_ptr station = st_ptr(new Station(*station_ptr));
+            stations.push_back(station);
+        }
     }
     return *this;
 }
 
 Line::~Line() { //Subway will manage station deletion (for now)
-    stations.clear();
+    stations.clear(); //st_ptr will manage own deletion
 } 
-
-// Subway will handle memory management, commented out individual-style functions
-// // copy constructor
-// Line::Line(const Line& other):
-//            name(other.name), ID(other.ID), trainTypes(other.trainTypes) {
-//     for (const Station* otherStation : other.stations) {
-//         stations.push_back(
-//             new Station(otherStation->getNameAndID().first,
-//                         otherStation->getNameAndID().second, 
-//                         other.trainTypes)
-//         );
-//     }
-// }
-
-// // assignment operator
-// Line& Line::operator=(const Line& other) {
-//     if (this != &other) {
-//         name = other.name;
-//         ID = other.ID;
-//         for (const Station* otherStation : other.stations) {
-//             stations.push_back(
-//                 new Station(otherStation->getNameAndID().first,
-//                             otherStation->getNameAndID().second, 
-//                             other.trainTypes)
-//             );
-//         }
-//     }
-//     return *this;
-// }
-
-// // deconstructor (please implement with shared pointer for Station*)
-// Line::~Line() { //subway will handle the Stations
-//     for (Station* station: stations) {
-//         if (station != nullptr) {
-//             delete station;
-//             station = nullptr;
-//         }
-//     }
-//     stations.clear();
-// }
 
 //updates each station that belongs to the station
 void Line::update() { //should typically not be used to avoid update overlap
-    for (Station* station : stations) {
+    for (auto station : stations) {
         station->update();
     }
 }
 
-const std::vector<Station*>* Line::getStations() const {
+const std::vector<st_ptr>* Line::getStations() const {
     return &stations;
 }
 
@@ -134,10 +106,9 @@ std::string Line::getID() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Line& rhs) {
-    if (rhs.stations.size() == 0) return os;
     os << "Below are the statuses for each station on the " <<
            rhs.name << ":\n\n";
-    for (Station* station : rhs.stations) {
+    for (auto station : rhs.stations) {
         os << *station << '\n';
     }
     return os << '\n';
