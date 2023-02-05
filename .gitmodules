@@ -1,0 +1,9 @@
+[submodule "src/nlohmann"]
+	path = src/nlohmann
+	url = https://github.com/nlohmann/json
+[submodule "src/pugixml"]
+	path = src/pugixml
+	url = https://github.com/zeux/pugixml
+[submodule "src/curl"]
+	path = src/curl
+	url = https://github.com/curl/curl
