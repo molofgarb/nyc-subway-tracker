@@ -24,6 +24,7 @@ namespace constant {
 
     //-------------------------------------------------------------------------
 
+    // snapshot
     const std::string SNAPSHOT_TABLE_NAME = "Subway_Snapshots";
     const std::vector<std::pair<std::string, std::string>> SNAPSHOT_COLUMNS = { // ex) Subway Stations
         std::make_pair("Subway_Snapshot", "TEXT"), // ex) Subway_1673908573
@@ -36,54 +37,43 @@ namespace constant {
 
     //-------------------------------------------------------------------------
 
-    
-    const std::vector<std::pair<std::string, std::string>> SUBWAY_STATIONS_COLUMNS = { // ex) Subway_Stations_1673908573
-        std::make_pair("StopID_and_Time", "TEXT"), // ex) G14_1673908573
+    // ex) Subway_Stations_1673908573, subway_station_snapshot
+    const std::vector<std::pair<std::string, std::string>> SUBWAY_STATIONS_COLUMNS = { 
+        std::make_pair("StopID_and_Time", "TEXT"), // ex) Station_G14_1673908573
         std::make_pair("StopID", "TEXT"), // ex) G14
         std::make_pair("Name", "TEXT"), // ex) Roosevelt Av
         std::make_pair("Time", "INTEGER") // ex) Roosevelt Av
     };
 
-    const std::vector<std::pair<std::string, std::string>> STATION_COLUMNS = { // ex) Station_G14_1673908573
+    // ex) Station_G14_1673908573, station_snapshot
+    const std::vector<std::pair<std::string, std::string>> STATION_COLUMNS = { 
         std::make_pair("Name_and_Time", "TEXT"), // ex) F_1673909000
         std::make_pair("Name", "TEXT"), // ex) F
+        std::make_pair("Time_Checked", "TEXT"),
         std::make_pair("Time_Until_Arrival", "TEXT"), //ex) 05:33
         std::make_pair("Time_of_Arrival", "TEXT"), // ex) 12:28:00;
+        std::make_pair("Time_Checked_Unix", "TEXT"),
         std::make_pair("Time_of_Arrival_Unix", "INTEGER"), // ex) 1673909000
         std::make_pair("Direction_ID", "INTEGER") // ex) 1
     };
 
     //-------------------------------------------------------------------------
 
-    /* notice that this acts as one big line with every station, so it can be
-       used to store a subway snapshot by station by pretending that the system
-       is a line 
-    */
-
-    const std::vector<std::pair<std::string, std::string>> LINES_COLUMNS(SUBWAY_STATIONS_COLUMNS);
-
-    const std::vector<std::pair<std::string, std::string>> SUBWAY_LINES_COLUMNS = { // ex) Subway_Lines_1673908573
+    // ex) Subway_Lines_1673908573, subway_line_snapshot
+    const std::vector<std::pair<std::string, std::string>> SUBWAY_LINES_COLUMNS = { 
         std::make_pair("Line_and_Time", "TEXT"), // ex) F_1673908573
         std::make_pair("Line", "TEXT"), // ex) F
         std::make_pair("Time", "INTEGER") // ex) 1673908573
     };
+
+    // ex) Subway_Lines_1673908573, line_snapshot
+    const std::vector<std::pair<std::string, std::string>> LINES_COLUMNS = SUBWAY_STATIONS_COLUMNS; 
 
 }
 
 namespace tracker {
     sqlite3* subway_db_initialize(sqlite3* db); //initializes snapshot -- creates the file
     sqlite3* snapshot(const Subway& subway, sqlite3* db); //gets current system status and stores it in snapshots table
-
-    //these functions are used by snapshot() -- ordinarily should not be called
-
-    //gets current subway status in terms of a large station snapshot and in terms of line snapshot
-    const std::string subway_snapshot(const Subway& subway, sqlite3* db);
-
-    //gets current line status as a bunch of station snapshots
-    const std::string line_snapshot(const Line& line, sqlite3* db); //WIP
-
-    //gets current station snapshot
-    const std::string station_snapshot(const Station& station, sqlite3* db);
 
     //WIP
     sqlite3* subway_output(const Subway& subway, sqlite3* db);

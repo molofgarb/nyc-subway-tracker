@@ -155,17 +155,3 @@ std::ostream& Subway::outputByStation(std::ostream& os) const {
 std::ostream& operator<<(std::ostream& os, const Subway& rhs) {
     return rhs.outputByStation(os); //default output
 }
-
-// ===== DEBUG ================================================================
-
-// void Subway::debug(const std::string& in) {
-//     std::cout << "In: " << in << '\n';
-//     std::cout << "allStations Station addr: " << (*allStations)[in] << '\n';
-//     std::cout << "allStations Station name: " << (*allStations)[in]->getNameAndID().first << '\n';
-//     std::cout << "allStations Station ID: " << (*allStations)[in]->getNameAndID().second << '\n';
-//     for (std::pair<Train*, int> type : *trainTypes) {
-//         std::cout << "\tTrain: " << type.first << ' ' << type.first->getName() << '\n';
-//     }
-//     std::cout << "debugging Station now..." << '\n';
-//     (*allStations)[in]->debug();
-// }

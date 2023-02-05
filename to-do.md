@@ -1,8 +1,5 @@
 # To-do:
 
-- optimize space of sql table by using appropriate types and enforcing quotes on all data
-
-- add line tables and line-based subway table
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
 
 ## **High Priority**
@@ -15,16 +12,17 @@
 ## **Medium Priority**
 - delete oldest records if db file is too big
 - make subway output nicer (multiple files in a directory option)
-- exception handling
+- exception handling (in general)
 
 ## **Low Priority**:
-- exception handling
 - use multithreading in line/subway update
 - if libcurl get error, revisit station to update again later
 - progress bar?
 
 
 ## Completed
+- add line tables and line-based subway table
+- optimize space of sql table by using appropriate types and enforcing quotes on all data
 - compile submodules as part of make
 - add include flags thing to make to make includes nicer
 - getPage into string to reduce overhead
