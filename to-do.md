@@ -1,6 +1,7 @@
 # To-do:
 
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
+- make logger more interactive -- display time elapsed during run, specify how many snapshots to take before close, run forever mode where you can pause snapshot/update, etc.
 
 ## **High Priority**
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
