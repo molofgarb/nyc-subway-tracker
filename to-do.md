@@ -1,5 +1,7 @@
 # To-do:
 
+- add git submodule cloning stuff to make to simplify build process
+- **need to install tcl, which is a dependency of sqlite**
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
 
 ## **High Priority**
