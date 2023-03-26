@@ -1,4 +1,6 @@
-.PHONY: all build-external curl pugixml sqlite remake directories clean cleaner cleandb
+.PHONY: all build-external curl pugixml sqlite rebuild directories clean cleaner cleandb
+.DEFAULT: all
+# .SILENT:
 
 # File Extensions
 SRCEXT			:= cpp
@@ -39,10 +41,10 @@ SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
 OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
 
 # Adjust Variables depending on Environment
-ifeq ($(filter ${shell uname}, Linux),"") #Linux
+ifeq ($(filter ${shell uname}, linux),) #Linux
     TARGETEXT 	:= 
     OPENSSLFLAG	:= --with-openssl
-else ifeq ($(filter ${shell uname}, Darwin),"") #macOS
+else ifeq ($(filter ${shell uname}, darwin),) #macOS
     TARGETEXT 	:= 
     OPENSSLFLAG	:= --with-openssl=/opt/homebrew/opt/openssl
 else #Windows
@@ -53,7 +55,8 @@ endif
 # Target
 TARGET 			:= ${TARGETPATH}/subway-logger${TARGETEXT}
 
-# =============================================================================
+# ===== BUILD MY OBJECTS ======================================================
+
 all: directories build-external ${TARGET}
 
 ${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
@@ -68,7 +71,7 @@ ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
 
 # nlohmann's json does not need to be compiled individually
 
-# =============================================================================
+# ===== BUILD EXT OBJECTS =====================================================
 
 # Find Which Libraries Need to Be Built
 ifeq ($(wildcard ${BUILDPATH}/curl/lib/.libs/libcurl.a),)
@@ -110,13 +113,15 @@ sqlite:
 	make ||:; \
 	make sqlite3.c ||:;
 
-# =============================================================================
-
-remake: cleaner all
+# ===== MISC ==================================================================
 
 directories:
-	@mkdir ${BUILDPATH} ||:
-	@mkdir ${TARGETPATH} ||:
+	-@mkdir -p ${BUILDPATH} ||:
+	-@mkdir -p ${TARGETPATH} ||:
+
+
+rebuild: cleaner
+	make
 
 clean: 
 	-rm -rf ${BUILDPATH}
