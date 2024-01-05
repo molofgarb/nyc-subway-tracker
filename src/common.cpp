@@ -1,17 +1,27 @@
-#include <iostream>
-#include <cstdio>
-
-#include <string>
-#include <vector>
-
-// external includes
-#include <curl/curl.h>
-
 // nyc-subway-tracker includes
 #include <common.h>
 
+//Train equality operator
+bool operator==(const Train& lhs, const Train& rhs) {
+    return ((lhs.name == rhs.name) && (lhs.dirID == rhs.dirID));
+}
 
-static size_t get_page::write_data(void* dataptr,     //pointer to data from curl
+//Train comparison operator (needed for std::map)
+bool operator<(const Train& lhs, const Train& rhs) {
+    return (lhs.name == rhs.name) ? (lhs.dirID < rhs.dirID) : (lhs.name < rhs.name);
+}
+
+// =============================================================================
+
+std::string common::formatTime(time_t* time) {
+    char buf[32] = {0};
+    std::strftime(buf, 32, "%F-%T", std::localtime(time));
+    return std::string(buf);
+}
+
+// =============================================================================
+
+size_t get_page::write_data(void* dataptr,     //pointer to data from curl
                                    size_t size,       //size of each data element
                                    size_t nmemb,      //num of data elements
                                    void* outstream) { //data output stream

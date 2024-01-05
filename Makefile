@@ -1,5 +1,5 @@
-.PHONY: all build-external curl pugixml sqlite rebuild directories clean cleaner cleandb
-.DEFAULT: all
+.PHONY: all build-external curl pugixml sqlite remake directories clean cleaner cleandb
+.DEFAULT_GOAL: all
 # .SILENT:
 
 # File Extensions
@@ -15,26 +15,27 @@ TARGETPATH 		:= bin
 
 # Compiler
 CXX 			:= g++
-CXXFLAGS 		:= -std=c++17 -g -O2 #-Wall
+CXXFLAGS 		:= -std=c++17 -g -O2 -Wall
+CXXTFLAGS		:= -static
 INCFLAGS		:= -I include
 
 # Includes
 INCFLAGS		+= -I ${EXTPATH}/curl/include \
 				   -I ${EXTPATH}/nlohmann/single_include \
 				   -I ${EXTPATH}/pugixml/src \
-				   -I ${BUILDPATH}/sqlite			
+				   -I ${BUILDPATH}/sqlite
 
 # Build and Link Externals
 EXTBUILDS 		:= 
-OPENSSLFLAG		:= 
+CURLFLAG		:= 
 
 PUGIXMLSRC		:= ${EXTPATH}/pugixml/src/pugixml.cpp
 PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
 
 DEPOBJECTS		:= ${PUGIXMLOBJ}
 
-LDFLAGS 		:= -L ${BUILDPATH}/curl/lib/.libs -l curl 
-LDFLAGS 		+= -L ${BUILDPATH}/sqlite/.libs -l sqlite3 
+LDFLAGS 		:= -L${BUILDPATH}/curl/lib/.libs -lcurl 
+LDFLAGS 		+= -L${BUILDPATH}/sqlite/.libs -lsqlite3 
 
 # Build (Project Sources and Objects)
 SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
@@ -43,35 +44,16 @@ OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCE
 # Adjust Variables depending on Environment
 ifeq ($(filter ${shell uname}, linux),) #Linux
     TARGETEXT 	:= 
-    OPENSSLFLAG	:= --with-openssl
+    CURLFLAG	+= --with-openssl
 else ifeq ($(filter ${shell uname}, darwin),) #macOS
     TARGETEXT 	:= 
-    OPENSSLFLAG	:= --with-openssl=/opt/homebrew/opt/openssl
-else #Windows
+    CURLFLAG	+= --with-openssl=/opt/homebrew/opt/openssl
+else ifeq ($(filter $(shell ver), windows),) #Windows
 	TARGETEXT 	:= .exe
-    OPENSSLFLAG	:= --with-openssl
+    CURLFLAG	+= --with-openssl
+else
+	exit 1
 endif
-
-# Target
-TARGET 			:= ${TARGETPATH}/subway-logger${TARGETEXT}
-
-# ===== BUILD MY OBJECTS ======================================================
-
-all: directories build-external ${TARGET}
-
-${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
-	@echo building ${TARGET}...
-	@echo
-	@${CXX} ${CXXFLAGS} ${INCFLAGS} $^ ${LDFLAGS} -o $@ ||:
-
-${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
-	@echo building $<...
-	@echo
-	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o $@ ||:
-
-# nlohmann's json does not need to be compiled individually
-
-# ===== BUILD EXT OBJECTS =====================================================
 
 # Find Which Libraries Need to Be Built
 ifeq ($(wildcard ${BUILDPATH}/curl/lib/.libs/libcurl.a),)
@@ -86,6 +68,29 @@ ifeq ($(wildcard ${BUILDPATH}/sqlite/sqlite3.h),)
     EXTBUILDS += sqlite
 endif
 
+# Target
+TARGET 			:= ${TARGETPATH}/subway-logger${TARGETEXT}
+
+# ===== BUILD MY OBJECTS ======================================================
+
+all: directories build-external ${TARGET}
+
+${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
+	@echo building $@...
+	${CXX} ${CXXFLAGS} ${INCFLAGS} $^ $(LDFLAGS) -o $@ ||:
+	@echo ========================================
+	@echo
+
+${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
+	@echo building $@...
+	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< $(LDFLAGS) -o $@ ||:
+	@echo ========================================
+	@echo
+
+# nlohmann's json does not need to be compiled individually
+
+# ===== BUILD EXT OBJECTS =====================================================
+
 build-external: directories ${EXTBUILDS}
 	
 curl:
@@ -96,7 +101,7 @@ curl:
 	cd ../.. ||:; \
 	mkdir ${BUILDPATH}/curl ||:; \
 	cd ${BUILDPATH}/curl ||:; \
-	../../${EXTPATH}/curl/configure ${OPENSSLFLAG} ||:; \
+	../../${EXTPATH}/curl/configure $(CURLFLAG)||:; \
 	make ||:; 
 
 pugixml: ${PUGIXMLSRC}
@@ -119,32 +124,15 @@ directories:
 	-@mkdir -p ${BUILDPATH} ||:
 	-@mkdir -p ${TARGETPATH} ||:
 
-
-rebuild: cleaner
+remake: cleaner
 	make
 
 clean: 
-	-rm -rf ${BUILDPATH}
-	@echo cleaning curl...
-	@cd ${EXTPATH}/curl ||:; \
-	git clean -fdx ||:; \
-
+	-rm -rf $(TARGETPATH)
+	-rm -rf $(OBJECTS)
+	
 cleaner: clean
-	-rm -rf ${TARGETPATH}
+	-rm -rf ${BUILDPATH}
 
 cleandb:
 	-rm -f nyc-subway-tracker.db
-
-# =============================================================================
-# Unused
-# =============================================================================
-
-ROUTES_TARGET := routes_fix.exe
-
-routes_fix: ${ROUTES_TARGET}
-
-${ROUTES_TARGET}: routes_fix.o
-	${CXX} ${CXXFLAGS} $< -o src/misc/$@
-
-routes_fix.o: src/misc/routes_fix.cpp
-	${CXX} ${CXXFLAGS} -c $< -o $@

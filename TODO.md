@@ -82,7 +82,7 @@ Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - **routes** (for ALL forms of transport - stat
 
 
 qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP - **stopsForRoute** (after clicking on a train - static)
-  https://collector-otp-prod.camsys-apps.com/schedule/MTASBWY/stopsForRoute?apikey=qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP&&routeId=MTASBWY:<LINE DESIGNATION>
+  https://collector-otp-prod.camsys-apps.com/schedule/MTASBWY/stopsForRoute?apikey=qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP&routeId=MTASBWY:<LINE DESIGNATION>
 
 
 Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE - **nearby** (after clicking on a stop - dynamic)

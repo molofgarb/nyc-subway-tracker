@@ -84,7 +84,7 @@ const std::string subway_station_snapshot(const Subway& subway, sqlite3* db, tim
     db = sqlite::create_new_table(db, table);
 
     //add entries for each station
-    for (const auto stationPair : *subway.getStations()) { 
+    for (const auto stationPair : subway.getStations()) { 
         std::string stationTime = std::to_string(stationPair.second->getTime());
 
         //updates station, and then uses time of station update in primary key
@@ -118,10 +118,10 @@ const std::string subway_line_snapshot(const Subway& subway, sqlite3* db, time_t
     db = sqlite::create_new_table(db, table);
 
     //add entries for each line
-    for (const auto linePtr : subway.getLines()) {
+    for (const auto line : subway.getLines()) {
         std::vector<std::string> data{
-            tracker::line_snapshot(*linePtr, db, time),
-            linePtr->getName(),
+            tracker::line_snapshot(line, db, time),
+            line.getName(),
             timeStr
         };
         sqlite::insert_row(db, table, data);

@@ -1,11 +1,3 @@
-#include <iostream>
-
-#include <utility>
-#include <vector>
-#include <string>
-
-#include <ctime>
-
 // external includes
 #include <pugixml.hpp>
 
@@ -14,24 +6,17 @@
 
 #include <station.h>
 
-             
-//Train equality operator
-bool operator==(const Train& lhs, const Train& rhs) {
-    return ((lhs.name == rhs.name) && (lhs.dirID == rhs.dirID));
-}
-
-//Train comparison operator (needed for std::map)
-bool operator<(const Train& lhs, const Train& rhs) {
-    return (lhs.name == rhs.name) ? (lhs.dirID < rhs.dirID) : (lhs.name < rhs.name);
-}
                  
 // ===== STATION ==============================================================
 
 //Station constructor
 Station::Station(const std::string& name, 
                  const std::string& stopID, 
-                 const std::map<Train*, int>* trainTypes): 
-    name(name), stopID(stopID), updateTime(0), trainTypes(trainTypes) {}
+                 const std::set<Train>* trainTypes): 
+                 name(name), stopID(stopID), update_time(0), 
+                 update_ftime(""), trainTypes(trainTypes) {}
+
+// =============================================================================
 
 int Station::update() {
     nearby.clear();
@@ -42,20 +27,20 @@ int Station::update() {
         "apikey: " + constant::STATION_API_KEY,
         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     };
-
     std::string xmlData = "";
     get_page::get_page(url, headers, xmlData); //write xml page to xmlData
     
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_buffer_inplace(xmlData.data(), xmlData.size());
     if (!result) {
-        std::cerr << "error code: 1000" << '\n'; //unable to open
+        std::cerr << "error <station.cpp>: 1000" << '\n'; //unable to open
         return 1;
     }
 
     populateNearby(doc); //update vector nearby with train info
 
-    updateTime = time(nullptr); //timestamp when object fully updated
+    update_time = time(nullptr); //timestamp when object fully updated
+    update_ftime = common::formatTime(&update_time);
     return 0;
 } 
 
@@ -63,30 +48,25 @@ int Station::update() {
 int Station::populateNearby(pugi::xml_document& doc) {
     pugi::xml_node root = doc.child("LinkedValues");
 
-    for (auto incomingTrainType: // for each type of train (ex. Manhattan-bound F)
-            root.child("item").child("groups").children("groups") 
-            ) {
+    // for each type of train (ex. Manhattan-bound F)
+    for (auto incomingTrainType: 
+         root.child("item").child("groups").children("groups") 
+    ) {
         // get info about the type of train
         std::string name = incomingTrainType.child("route").child("id").child("id").text().as_string();
         int dirID = incomingTrainType.child("times").child("times").child("directionId").text().as_int();
 
-        //swap name with name on MTA map if necessary
+        // swap name with name on MTA map if necessary
         if (constant::SHUTTLE_NAMES.find(name) != constant::SHUTTLE_NAMES.end()) //if name exists
             name = constant::SHUTTLE_NAMES.at(name); //swap name (assuming equal to ID) with actual name
 
-        if (name[name.size() - 1] == 'X') //remove special express indicator
+        // remove special express indicator
+        if (name[name.size() - 1] == 'X') 
             name = name.substr(0, name.size() - 1);
 
         // match train type to known train pointer
-        const Train* trainptr = nullptr; //pointer to train type being checked
-        for (const auto& trainPair : *trainTypes) { //find the pointer to the matching train
-            const Train* trainType = std::get<0>(trainPair); //pointer to Train
-            if ((name == trainType->name) && (dirID == trainType->dirID)) {
-                trainptr = trainType; //set train to point to defined train type
-                break; 
-            }
-        }
-        if (trainptr == nullptr) { //<DEBUG>
+        const Train* trainptr = &(*( trainTypes->find(Train(name, dirID)) )); //pointer to train type being checked
+        if (trainptr == nullptr) {
             std::cerr << "error <station.cpp>: 2000 " + name + " " << 
                          dirID << '\n'; // error
             return 1;
@@ -97,12 +77,18 @@ int Station::populateNearby(pugi::xml_document& doc) {
             time_t time = //in unix time, realtime is the number used on webpage
                     incomingTrain.child("serviceDay").text().as_int() +
                     incomingTrain.child("realtimeArrival").text().as_int(); 
-            nearby.push_back(Arrival(trainptr, time));
+
+            nearby.emplace_back(
+                trainptr, time, common::formatTime(&time)
+            );
         }
     }
     return 0;
 }
 
+// =============================================================================
+
+// break glass in case of emergency
 std::ostream& operator<<(std::ostream& os, const Station& rhs) {
     std::time_t timeNow = std::time(nullptr);
     char timestr[128] = "";
@@ -111,11 +97,11 @@ std::ostream& operator<<(std::ostream& os, const Station& rhs) {
 
     if (std::strftime(timestr, sizeof(timestr), "%I:%M:%S %p", std::localtime(&timeNow)))
         os << "The current time is " << timestr << '.' << '\n';
-    if (std::strftime(timestr, sizeof(timestr), "%I:%M:%S %p", std::localtime(&rhs.updateTime)))
+    if (std::strftime(timestr, sizeof(timestr), "%I:%M:%S %p", std::localtime(&rhs.update_time)))
         os << "The data was updated for this station at " << timestr << '.' << '\n';
 
     for (auto arrival : rhs.nearby) {
-        std::time_t untilArrivalTime = arrival.time - rhs.updateTime; //diff arrival to now time
+        std::time_t untilArrivalTime = arrival.time - rhs.update_time; //diff arrival to now time
         std::time_t arrivalTime(int(arrival.time) % (86400)); //updateTime in sec from start of day
 
         os << arrival.train->name << ", " << 

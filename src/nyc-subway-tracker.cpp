@@ -16,7 +16,7 @@
 
 
 int main(int argc, char* argv[]) {
-    unsigned snapshots_num = 3;
+    unsigned snapshots_num = 1;
     std::string sleep_time_str = "1";
     std::chrono::minutes sleep_time(std::stoul(sleep_time_str));
     // TODO: error handling here and better argument parsing
