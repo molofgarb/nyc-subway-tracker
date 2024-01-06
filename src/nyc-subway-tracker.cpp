@@ -1,12 +1,5 @@
-#include <iostream>
-#include <fstream>
-
-#include <string>
-#include <vector>
-
-#include <chrono>
+#include <common.h>
     using namespace std::chrono_literals;
-#include <thread>
 
 // nyc-subway-tracker includes
 #include <tracker.h>
@@ -16,7 +9,7 @@
 
 
 int main(int argc, char* argv[]) {
-    unsigned snapshots_num = 1;
+    size_t snapshots_num = 1;
     std::string sleep_time_str = "1";
     std::chrono::minutes sleep_time(std::stoul(sleep_time_str));
     // TODO: error handling here and better argument parsing
@@ -28,8 +21,7 @@ int main(int argc, char* argv[]) {
         std::chrono::minutes sleep_time(std::stoul(sleep_time_str));
     } 
 
-    sqlite3* db = nullptr; 
-    db = tracker::subway_db_initialize(db); //initialize db and have db point to it
+    sqlite3* db = tracker::snapshot_db_initialize(); //initialize db and have db point to it
 
     Subway subway; //subway object that holds last system check status
 
@@ -37,9 +29,11 @@ int main(int argc, char* argv[]) {
     // file << subway << std::endl;
     // file.close();
 
+    // print header
     std::cout << "Performing " << snapshots_num << " updates with " << 
         sleep_time_str << " between each update." << std::endl;
-    for (auto i = 0; i < snapshots_num; i++) {
+
+    for (size_t i = 0; i < snapshots_num; i++) {
         std::cout << "Starting Update #" << i + 1 << "..." << std::endl;
         subway.update(); //update subway object -- get current system status
         
@@ -53,4 +47,5 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "All snapshot data can be found in " + constant::DB_NAME << std::endl;
+    // std::cout << common::formatTime() << std::endl;
 }

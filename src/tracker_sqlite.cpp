@@ -1,34 +1,29 @@
-#include <iostream>
-#include <fstream>
 
-#include <vector>
-#include <string>
-#include <utility>
-
-#include <ctime>
 
 // external includes
 #include <sqlite3.h>
 
+#include <common.h>
+
 // nyc-subway-tracker includes
 #include <tracker_sqlite.h>
 
+#define FILENAME "tracker_sqlite.cpp"
+#define DEBUG_SQLITE_ZSQL 0
+#define DEBUG_SQLITE_DUP 1
 
 namespace sqlite {
 
-sqlite3* open_db(sqlite3* db, const std::string& db_name) {
-    int exit = sqlite3_open(db_name.data(), &db);
-    if (exit) { // IMPORTANT <debug> error probably this
-        std::cerr << "<error sql_helper::open_db()>" << std::endl;
-        return nullptr;
-    }
+sqlite3* open_db(const std::string& db_name) {
+    sqlite3* db = nullptr;
+    if (sqlite3_open(db_name.data(), &db))
+        common::panic(FILENAME, "open_db", "open error");
     return db;
 }
 
 sqlite3* create_new_table(sqlite3* db, const Table& table) {
-    std::string zSql = "CREATE TABLE " +
-                      table.name + "(\n";
-    for (auto i = 0; i < (table.columns).size(); i++) { //name, data type
+    std::string zSql = "CREATE TABLE IF NOT EXISTS " + table.name + "(\n";
+    for (size_t i = 0; i < (table.columns).size(); i++) { //name, data type
         auto name = (table.columns)[i].first;
         auto type = (table.columns)[i].second;
         zSql.append(
@@ -37,78 +32,101 @@ sqlite3* create_new_table(sqlite3* db, const Table& table) {
             ((i != (table.columns).size() - 1) ? ",\n" : ");")
         );
     }
+    // CREATE TABLE <tablename>(
+    //     "<name0>" "<type0>" PRIMARY KEY, 
+    //     "<name1>" "<type1>");
 
-    // std::cerr << "<debug> zSql: \n" << zSql << std::endl;
-    sqlite3_stmt* createTable;
-    int res0 = sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &createTable, nullptr);
-    int res1 = sqlite3_step(createTable);
-    int res2 = sqlite3_finalize(createTable);
-    // if (res0 + res1 + res2 != 0) {
-    //     std::cerr << "<error create_new_table> Table: " << table.name << ' ' <<
-    //         res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
-    // }
+    // executes prepared zSql statement
+    exec_zSql(db, zSql, "create_new_table");
+        
     return db;
 }
 
 sqlite3* insert_row(sqlite3* db, const Table& table, const std::vector<std::string>& data) {
     std::string zSql = "INSERT INTO " + table.name + "(";
 
-    for (auto i = 0; i < (table.columns).size(); i++) { //add table info
+    //add table info
+    for (size_t i = 0; i < (table.columns).size(); i++) { 
         zSql.append("\"" + (table.columns)[i].first + "\""); //names of rows
         if (i != (table.columns).size() - 1) zSql.append(",");
     }
     zSql.append(")\nVALUES (");
 
-    for (auto i = 0; i < data.size(); i++) { //add data info
+    //add data info
+    for (size_t i = 0; i < data.size(); i++) { 
         zSql.append("\"" + data[i] + "\"");
         if (i != data.size() - 1) zSql.append(",");
     }
-    zSql.append(");\n");
+    zSql.append(");");
+    // INSERT INTO <tablename>(<columnname1>,<columnname2>)
+    // VALUES (<data[0]>,<data[1]>);
 
-    // std::cerr << "<debug> zSql: \n" << zSql << std::endl;
-    sqlite3_stmt* insertData;
-    int res0 = sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &insertData, nullptr);
-    int res1 = sqlite3_step(insertData);
-    int res2 = sqlite3_finalize(insertData);
-    // if (res0 + res1 + res2 != 0) {
-    //     std::cerr << "<error insert_row> Table: " << table.name << ' ' <<
-    //         res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
-    // }
+    // executes prepared zSql statement
+    exec_zSql(db, zSql, "insert_row");
+
     return db;
 }
 
 sqlite3* delete_row(sqlite3* db, const Table& table, const std::string& data) {
     std::string primaryKey = table.columns[0].first;
     std::string zSql = "DELETE FROM " + table.name + "WHERE " +
-        primaryKey + "=" + "\"" + data[0] + "\"" + ";"; //assuming primary key is always first column
+        primaryKey + "=" + "\"" + data[0] + "\"" + ";"; 
+    // DELETE FROM <tablename> WHERE <primarykey> = "<data[0]>";
     
-    // std::cerr << "<debug> zSql: " << zSql << std::endl;
-    sqlite3_stmt* deleteData;
-    int res0 = sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &deleteData, nullptr);
-    int res1 = sqlite3_step(deleteData);
-    int res2 = sqlite3_finalize(deleteData);
-    // if (res0 + res1 + res2 != 0) {
-    //     std::cerr << "<error delete_row> Table: " << table.name << ' ' <<
-    //         res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
-    // }
+    // executes prepared zSql statement
+    exec_zSql(db, zSql, "delete_row");
+
     return db;
 }
 
 sqlite3* get_row(sqlite3* db, const Table& table, const std::vector<std::string>& data) {
     std::string primaryKey = table.columns[0].first;
-    std::string zSql = "SELECT * from " + table.name + " WHERE " +
+    std::string zSql = "SELECT * FROM " + table.name + " WHERE " +
         primaryKey + " = " + "\"" + data[0] + "\"" + ";";
+    // SELECT * from <tablename> WHERE <primarykey> = "<data[0]>";
     
-    // std::cerr << "<debug> zSql: " << zSql << std::endl;
-    sqlite3_stmt* getData;
-    int res0 = sqlite3_prepare_v2(db, zSql.data(), zSql.length(), &getData, nullptr);
-    int res1 = sqlite3_step(getData);
-    int res2 = sqlite3_finalize(getData);
-    // if (res0 + res1 + res2 != 0) {
-    //     std::cerr << "<error get_row> Table: " << table.name << ' ' <<
-    //         res0 << ' ' << res1 <<  ' ' << res2 << std::endl;
-    // }
+    // executes prepared zSql statement
+    // TODO: set up callback function stuff
+    exec_zSql(db, zSql, "get_row");
+
     return db;
+}
+
+// executes prepared zSql statement and checks arguments
+void exec_zSql(
+    sqlite3* db, const std::string& zSql, const std::string& funcname, 
+    int (*callback)(void*,int,char**,char**), void* cbarg
+) {
+    if (db == nullptr || zSql.empty() || funcname.empty())
+        common::panic(FILENAME, funcname + ", exec_zSql", "args");
+
+    // print out statement if debug on
+    if (DEBUG_SQLITE_ZSQL) 
+        std::cerr << "<debug> <" << funcname << "> zSql: \n" << zSql << std::endl;
+
+    // execute sqlite3 statement
+    int ret;
+    char* errmsg = nullptr;
+    if ( 
+        (ret = sqlite3_exec(db, zSql.data(), callback, cbarg, &errmsg)) &&
+        ret != 19
+    ) {
+
+        std::string strerrmsg;
+        if (errmsg != nullptr) {
+            strerrmsg = std::string(errmsg);
+            sqlite3_free(errmsg);
+        }
+
+        std::cerr << "<debug> zSql: \n" << zSql << std::endl;
+        common::panic(FILENAME, funcname + ", exec_zSql", 
+            strerrmsg + " " + std::to_string(ret));
+    }
+
+    // SQL duplicate entry error
+    // don't panic, just make a note of it in stdout if debug on
+    if (DEBUG_SQLITE_DUP && ret == 19)
+        std::cerr << "<debug> <" << funcname << "> duplicate entry: " << zSql << std::endl;
 }
 
 }

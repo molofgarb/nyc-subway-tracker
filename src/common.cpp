@@ -1,6 +1,8 @@
 // nyc-subway-tracker includes
 #include <common.h>
 
+#define FILENAME "common.cpp"
+
 //Train equality operator
 bool operator==(const Train& lhs, const Train& rhs) {
     return ((lhs.name == rhs.name) && (lhs.dirID == rhs.dirID));
@@ -12,13 +14,33 @@ bool operator<(const Train& lhs, const Train& rhs) {
 }
 
 // =============================================================================
+namespace common {
 
-std::string common::formatTime(time_t* time) {
+std::string formatTime(time_t* time, bool sqlite) {
+    time_t now;
+
+    // if a time is not supplied, then get the format time for now
+    if (time == nullptr) {
+        now = std::time(nullptr);
+        time = &now;
+    }
+
     char buf[32] = {0};
-    std::strftime(buf, 32, "%F-%T", std::localtime(time));
+    if (sqlite)
+        std::strftime(buf, 32, "%Y_%m_%d_%H_%M_%S", std::localtime(time));
+    else
+        std::strftime(buf, 32, "%Y-%m-%d-%H:%M:%S", std::localtime(time));
+
     return std::string(buf);
 }
 
+void panic(const std::string& filename, const std::string& funcname, const std::string& misc) {
+    std::cerr << "<error> <" << filename << "> <" << funcname << "> " << misc
+              << std::endl;
+    exit(1);
+}
+
+}
 // =============================================================================
 
 size_t get_page::write_data(void* dataptr,     //pointer to data from curl
@@ -33,14 +55,12 @@ int get_page::get_page(const std::string& url,
                        const std::vector<std::string>& headers, 
                        std::string& data) {
     CURL* curl = curl_easy_init();
-    FILE* file;
-    CURLcode res;
     
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     //configure headers
     struct curl_slist* full_header = NULL;
-    for (const std::string header : headers) {
+    for (const std::string& header : headers) {
         full_header = curl_slist_append(full_header, header.data());
     }
     
@@ -56,7 +76,8 @@ int get_page::get_page(const std::string& url,
         // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
-        res = curl_easy_perform(curl);
+        if (curl_easy_perform(curl))
+            common::panic(FILENAME, "get_page", "curl easy perform error");
         
         // std::cerr << "<DEBUG getPage.cpp> CURLcode: " << res << "\t URL: " << url << std::endl;
     }

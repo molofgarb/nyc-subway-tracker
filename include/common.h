@@ -3,8 +3,10 @@
 
 #include <memory>
 #include <utility>
+#include <thread>
 
 #include <ctime>
+#include <chrono>
 
 #include <cstdio>
 #include <iostream>
@@ -18,6 +20,8 @@
 // external includes
 // #define CURL_STATICLIB
 #include <curl/curl.h>
+
+#define DEBUG 0
 
 namespace constant {
     const std::map<std::string, std::string> SHUTTLE_NAMES{ //short id (valid url), name
@@ -62,7 +66,8 @@ struct Arrival {
 
 namespace common {
     // takes a time and returns it in a string (no whitespace) format
-    std::string formatTime(time_t* time);
+    std::string formatTime(time_t* time = nullptr, bool sqlite=false);
+    void panic(const std::string& filename, const std::string& funcname, const std::string& misc="");
 }
 
 // =============================================================================

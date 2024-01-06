@@ -30,8 +30,7 @@ private:
 
     //used in constructor
     int parseLineJSON(std::string& jsonData, 
-                      std::map<std::string, st_ptr>& allStations,
-                      const std::set<Train>* trainTypes
+                      std::map<std::string, st_ptr>& allStations
     );
 
     std::string name; //name as shown on subway map

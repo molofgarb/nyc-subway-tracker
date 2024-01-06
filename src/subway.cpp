@@ -15,10 +15,10 @@ Subway::Subway() {
     const std::vector<std::string> headers{
         "apikey: " + constant::SUBWAY_API_KEY,
     };
-    std::string jsonData = "";
-    get_page::get_page(constant::SUBWAY_URL, headers, jsonData);
+    std::string data = "";
+    get_page::get_page(constant::SUBWAY_URL, headers, data);
 
-    parseSubwayJSON(jsonData);
+    parseSubwayJSON(data);
 }
 
 // fills out lines and trainTypes with data from subwayTemp.json
@@ -26,16 +26,15 @@ int Subway::parseSubwayJSON(std::string& jsonData) {
     nlohmann::json data = nlohmann::json::parse(jsonData);
 
     // create trainTypes and lines
-    for (nlohmann::json item : data) {
+    // note: dont make the iterable const, nlohmann doesn't like it :(
+    for (nlohmann::json& item : data) {
         // name is something like "R" for the R train
         // all shuttles are named S, but have different IDs
+        // id is usually same as name (e.g. R) but can be different sometimes
         std::string id = item["id"].get<std::string>();
         std::string name = (item["shortName"].is_null()) ? "" : 
                                    item["shortName"].get<std::string>();
         
-        // id is usually same as name (e.g. R) but can be different sometimes
-        
-
         // regular subway and not special express type of subway
         if ((id.substr(0, 8) == "MTASBWY:") && (id[id.size() - 1] != 'X')) { 
             
@@ -46,10 +45,11 @@ int Subway::parseSubwayJSON(std::string& jsonData) {
                 constant::SHUTTLE_NAMES.at(id) : //if subway shuttle
                 name; //if regular subway
 
-            //add a train going in each direction
+            //add a train going in each direction to shared train types record
             trainTypes.emplace(name, 0); 
             trainTypes.emplace(name, 1);
 
+            // add line to lines record
             lines.emplace_back(name, id, allStations, &trainTypes);
         }
     }
@@ -60,7 +60,7 @@ int Subway::parseSubwayJSON(std::string& jsonData) {
 
 //update each station from stations
 int Subway::update() {
-    for (auto stationPair : allStations) {
+    for (auto& stationPair : allStations) {
         (*stationPair.second).update();
     }
     return 0;
@@ -69,23 +69,35 @@ int Subway::update() {
 // =============================================================================
 
 std::ostream& Subway::outputByLine(std::ostream& os, bool allowRepeat) const {
+    // list out stations by line, allowing stations to be repeated if shared
+    // by multiple lines
     if (allowRepeat) {
-        for (const auto line : lines) {
+        for (const auto& line : lines) {
             os << line << '\n';
         }
-    } else { // do not repeat stations
-        std::map<const st_ptr, int> allStationsCheck{}; //tracks if station has been output
-        for (const auto line : lines) {
+
+    // do not repeat stations
+    } else { 
+        //tracks if station has been output
+        std::set<st_ptr> allStationsCheck{}; 
+
+        for (const auto& line : lines) {
             os << "Below are the statuses for each station on the " <<
                 line.getName() << ":\n\n";
+
             std::vector<st_ptr> stations(line.getStations());
-            for (const auto stationptr : stations) {
+
+            for (const auto& stationptr : stations) {
+
                 if (allStationsCheck.find(stationptr) == allStationsCheck.end()) {
                     os << *stationptr << '\n';
-                    allStationsCheck[stationptr] = 0;
+                    allStationsCheck.insert(stationptr);
                 }
+
             }
+
         }
+
     }
     return os;
 }
@@ -93,14 +105,11 @@ std::ostream& Subway::outputByLine(std::ostream& os, bool allowRepeat) const {
 std::ostream& Subway::outputByStation(std::ostream& os) const {
     os << "These are the nearby trains for all stations." << '\n';
 
-    char timestr[128] = "";
-    const auto now = std::time(nullptr);
-
-    if (std::strftime(timestr, sizeof(timestr), "%I:%M:%S %p", std::localtime(&now)))
-        os << "The current time is " << timestr << '.' << '\n';
+    time_t now = std::time(nullptr);
+    os << "The current time is " << common::formatTime(&now) << '.' << '\n';
 
     os << "==================================================" << '\n';
-    for (const auto stationPair : allStations) {
+    for (const auto& stationPair : allStations) {
         os << *(stationPair.second);
     }
     return os << '\n';

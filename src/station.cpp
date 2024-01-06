@@ -6,6 +6,7 @@
 
 #include <station.h>
 
+#define FILENAME "station.cpp"
                  
 // ===== STATION ==============================================================
 
@@ -22,24 +23,23 @@ int Station::update() {
     nearby.clear();
 
     //get xml with arrival data
-    const std::string url = constant::STATION_URL + stopID; //url to web page with data
     const std::vector<std::string> headers{ //headers in get request
         "apikey: " + constant::STATION_API_KEY,
         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     };
-    std::string xmlData = "";
-    get_page::get_page(url, headers, xmlData); //write xml page to xmlData
+    std::string data = "";
+    get_page::get_page(constant::STATION_URL + stopID, headers, data); //write xml page to xmlData
     
+    // parse xml data
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_buffer_inplace(xmlData.data(), xmlData.size());
-    if (!result) {
-        std::cerr << "error <station.cpp>: 1000" << '\n'; //unable to open
-        return 1;
-    }
+    pugi::xml_parse_result result = doc.load_buffer_inplace(data.data(), data.size());
+    if (!result)
+        common::panic(FILENAME, "update");
 
-    populateNearby(doc); //update vector nearby with train info
+    //update vector nearby with train info
+    populateNearby(doc); 
 
-    update_time = time(nullptr); //timestamp when object fully updated
+    update_time = time(nullptr);
     update_ftime = common::formatTime(&update_time);
     return 0;
 } 
@@ -49,7 +49,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
     pugi::xml_node root = doc.child("LinkedValues");
 
     // for each type of train (ex. Manhattan-bound F)
-    for (auto incomingTrainType: 
+    for (auto& incomingTrainType: 
          root.child("item").child("groups").children("groups") 
     ) {
         // get info about the type of train
@@ -66,14 +66,11 @@ int Station::populateNearby(pugi::xml_document& doc) {
 
         // match train type to known train pointer
         const Train* trainptr = &(*( trainTypes->find(Train(name, dirID)) )); //pointer to train type being checked
-        if (trainptr == nullptr) {
-            std::cerr << "error <station.cpp>: 2000 " + name + " " << 
-                         dirID << '\n'; // error
-            return 1;
-        }
+        if ( trainptr == &*(trainTypes->end()) ) 
+            common::panic(FILENAME, "populateNearby", name + " " + std::to_string(dirID));
 
         //check incomings of this type and add to nearby vector
-        for (auto incomingTrain: incomingTrainType.child("times").children("times")) { 
+        for (auto& incomingTrain: incomingTrainType.child("times").children("times")) { 
             time_t time = //in unix time, realtime is the number used on webpage
                     incomingTrain.child("serviceDay").text().as_int() +
                     incomingTrain.child("realtimeArrival").text().as_int(); 
@@ -100,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, const Station& rhs) {
     if (std::strftime(timestr, sizeof(timestr), "%I:%M:%S %p", std::localtime(&rhs.update_time)))
         os << "The data was updated for this station at " << timestr << '.' << '\n';
 
-    for (auto arrival : rhs.nearby) {
+    for (const auto& arrival : rhs.nearby) {
         std::time_t untilArrivalTime = arrival.time - rhs.update_time; //diff arrival to now time
         std::time_t arrivalTime(int(arrival.time) % (86400)); //updateTime in sec from start of day
 

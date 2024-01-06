@@ -16,25 +16,23 @@ Line::Line(const std::string& name,
            std::map<std::string, st_ptr>& allStations, //boss of line
            const std::set<Train>* trainTypes
 ): name(name), ID(ID), trainTypes(trainTypes) {
-    const std::string url = constant::LINE_URL + ID;
     const std::vector<std::string> headers{
         "apikey: " + constant::LINE_API_KEY
     };
-    std::string jsonData = "";
-    get_page::get_page(url, headers, jsonData);
+    std::string data = "";
+    get_page::get_page(constant::LINE_URL + ID, headers, data);
 
-    parseLineJSON(jsonData, allStations, trainTypes);
+    parseLineJSON(data, allStations);
 }
 
 // populates stations with a station pointer for each station in lineTemp.json
 int Line::parseLineJSON(std::string& jsonData, 
-                        std::map<std::string, st_ptr>& allStations,
-                        const std::set<Train>* trainTypes
+                        std::map<std::string, st_ptr>& allStations
 ) {
     nlohmann::json data = nlohmann::json::parse(jsonData);
     
     // create a Station for each station in data
-    for (const nlohmann::json stationData : data) {
+    for (const nlohmann::json& stationData : data) {
         std::string stationID = stationData["stopId"].get<std::string>().substr(8, 3);
 
         // station exists in allStations
@@ -43,6 +41,9 @@ int Line::parseLineJSON(std::string& jsonData,
 
         // station does not exist in allStations
         } else { 
+            if (DEBUG)
+                std::cout << "<debug> <line.cpp> <parseLineJSON> making station: " 
+                        << stationID << std::endl;
             st_ptr station = st_ptr(
                 new Station(
                     stationData["stopName"],
@@ -61,7 +62,7 @@ int Line::parseLineJSON(std::string& jsonData,
 
 //updates each station that belongs to the station
 int Line::update() { //should typically not be used to avoid update overlap
-    for (auto station : stations) {
+    for (auto& station : stations) {
         station->update();
     }
     return 0;
@@ -72,7 +73,7 @@ int Line::update() { //should typically not be used to avoid update overlap
 std::ostream& operator<<(std::ostream& os, const Line& rhs) {
     os << "Below are the statuses for each station on the " <<
            rhs.name << ":\n\n";
-    for (auto station : rhs.stations) {
+    for (const auto& station : rhs.stations) {
         os << *station << '\n';
     }
     return os << '\n';
