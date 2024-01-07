@@ -9,6 +9,8 @@
 
 #include <subway.h>
 
+#define DEBUG_UPDATETHREAD 0
+
 using st_ptr = std::shared_ptr<Station>;
 
 Subway::Subway() {
@@ -49,7 +51,7 @@ int Subway::parseSubwayJSON(std::string& jsonData) {
             trainTypes.emplace(name, 0); 
             trainTypes.emplace(name, 1);
 
-            // add line to lines record
+            // add line to lines record and initialize that line
             lines.emplace_back(name, id, allStations, &trainTypes);
         }
     }
@@ -60,8 +62,46 @@ int Subway::parseSubwayJSON(std::string& jsonData) {
 
 //update each station from stations
 int Subway::update() {
-    for (auto& stationPair : allStations) {
-        (*stationPair.second).update();
+    // initialize threads vector
+    std::vector<std::thread> threads;
+    threads.reserve(constant::THREADS);
+
+    // spawn multiple threads to perform subway updates
+    for (size_t offset = 0; offset < constant::THREADS; offset++)
+        threads.emplace_back(Subway::updateThread, this, offset);
+
+    // wait for all threads to stop
+    for (auto& thread : threads)
+        thread.join();
+
+    return 0;
+}
+
+int Subway::updateThread(size_t offset) {
+    size_t i = 0;
+    auto stationptr = allStations.begin();
+
+    std::advance(stationptr, offset);
+    i += offset;
+
+    while (stationptr != allStations.end()) {
+
+        // update a station
+        (stationptr->second)->update();
+
+        if (DEBUG_UPDATETHREAD)
+            std::cout << "<debug> just finished an update in thread " 
+                      << std::to_string(offset) << std::endl;
+
+        // if we are safe to increment to next station, then do so
+        // otherwise, signal to while loop that we are done
+        if (i + constant::THREADS < allStations.size()) {
+            std::advance(stationptr, constant::THREADS);
+            i += constant::THREADS;
+        } else {
+            stationptr = allStations.end();
+        }
+
     }
     return 0;
 }

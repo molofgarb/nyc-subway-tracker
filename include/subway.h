@@ -29,6 +29,8 @@ private:
     //used in constructor
     int parseSubwayJSON(std::string& jsonData);
 
+    int updateThread(size_t offset);  
+
     std::vector<Line> lines;
     std::map<std::string, st_ptr> allStations; //stationID, ptr to station
     std::set<Train> trainTypes; //train, dummy int

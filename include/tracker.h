@@ -17,10 +17,6 @@
 //make templated version later maybe
 
 namespace constant {
-    const std::string DB_NAME = "nyc-subway-tracker.db";
-
-    //-------------------------------------------------------------------------
-
     // snapshot
     const std::string SNAPSHOT_TABLE_NAME = "Snapshots";
     const std::vector<std::pair<std::string, std::string>> SNAPSHOT_COLUMNS = { // ex) Subway Stations
@@ -53,6 +49,7 @@ namespace constant {
         std::make_pair("Name_and_Time", "TEXT"), // ex) Nearby_F_1673909000
         std::make_pair("Name", "TEXT"), // ex) F
         std::make_pair("Direction_ID", "INTEGER"), // ex) 1
+        std::make_pair("Headsign", "TEXT"), // ex) Manhattan
         std::make_pair("Time_Checked", "TEXT"),
         std::make_pair("Time_Until_Arrival", "TEXT"), //ex) 05:33
         std::make_pair("Time_of_Arrival", "TEXT"), // ex) 12:28:00;

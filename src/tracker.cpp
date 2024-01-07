@@ -133,6 +133,7 @@ const std::string station_snapshot(const Station& station, sqlite3* db, time_t t
             "Nearby_" + arrival.train->name + "_" + arrival.ftime + "_" + std::to_string(i++),
             arrival.train->name,
             std::to_string(arrival.train->dirID),
+            arrival.headsign,
             station.getfTime(),
             strtimeUntilArrival,
             arrival.ftime

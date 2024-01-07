@@ -4,6 +4,7 @@
 #include <memory>
 #include <utility>
 #include <thread>
+#include <mutex>
 
 #include <ctime>
 #include <chrono>
@@ -24,6 +25,10 @@
 #define DEBUG 0
 
 namespace constant {
+    const uint8_t THREADS = 8;
+    const std::string LOGGER_NAME = "subway-logger";
+    const std::string DB_NAME = "nyc-subway-tracker.db";
+
     const std::map<std::string, std::string> SHUTTLE_NAMES{ //short id (valid url), name
         {"H", "SR"}, //Franklin Av
         {"FS", "SF"}, //Rockaway Park
@@ -54,10 +59,13 @@ bool operator==(const Train& lhs, const Train& rhs);
 bool operator<(const Train& lhs, const Train& rhs); //(needed for std::map)
 
 struct Arrival {
-    Arrival(const Train* train=nullptr, std::time_t time=0, std::string ftime=""):
-        train(train), time(time), ftime(ftime) {}
+    Arrival(const Train* train = nullptr, std::string headsign = "", 
+            std::time_t time = 0, std::string ftime = ""
+    ):
+        train(train), headsign(headsign), time(time), ftime(ftime) {}
 
     const Train* train;
+    std::string headsign;
     std::time_t time; //time of arrival
     std::string ftime;
 };

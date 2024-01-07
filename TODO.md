@@ -1,15 +1,13 @@
 # To-do:
 
-- make documentation on how to read the database
-- get rid of the weird trainptr structure
-
 - make tracker main process cmdline arguments in a nice manner (e.g. -h)
 - make snapshot an object that owns the database and owns a subway
 
-- add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
 - make tracker more interactive -- display time elapsed during run, specify how many snapshots to take before close, run forever mode where you can pause snapshot/update, etc.
 
 - make sure database is limited to a certain number of snapshots
+
+- make documentation on how to read the database
 
 ## **High Priority**
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
@@ -30,6 +28,9 @@
 
 
 ## Completed
+- add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
+- make stuff faster with multithreading! particularly with lines, one thread per line?
+- get rid of the weird trainptr structure (it saves memory)
 - add line tables and line-based subway table
 - optimize space of sql table by using appropriate types and enforcing quotes on all data
 - compile submodules as part of make

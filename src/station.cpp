@@ -55,6 +55,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
         // get info about the type of train
         std::string name = incomingTrainType.child("route").child("id").child("id").text().as_string();
         int dirID = incomingTrainType.child("times").child("times").child("directionId").text().as_int();
+        std::string headsign = incomingTrainType.child("headsign").text().as_string();
 
         // swap name with name on MTA map if necessary
         if (constant::SHUTTLE_NAMES.find(name) != constant::SHUTTLE_NAMES.end()) //if name exists
@@ -76,7 +77,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
                     incomingTrain.child("realtimeArrival").text().as_int(); 
 
             nearby.emplace_back(
-                trainptr, time, common::formatTime(&time)
+                trainptr, headsign, time, common::formatTime(&time)
             );
         }
     }
