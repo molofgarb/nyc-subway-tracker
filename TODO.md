@@ -1,5 +1,8 @@
 # To-do:
 
+- sanitize inputs from mta website
+- do something expected if there is a curl error (no network, possibly)
+
 - make tracker main process cmdline arguments in a nice manner (e.g. -h)
 - make snapshot an object that owns the database and owns a subway
 

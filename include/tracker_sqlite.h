@@ -29,6 +29,8 @@ namespace sqlite {
         sqlite3* db = nullptr, const std::string& zSql = "", const std::string& funcname = "", 
         int (*callback)(void*,int,char**,char**) = nullptr, void* cbarg = nullptr
     );
+    // 2nd arg to callback is num of result columns, 3rd arg is an array of strings
+    // about the type of each result, 4th arg is an array of results as strings
 }
 
 #endif
