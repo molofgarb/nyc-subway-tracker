@@ -1,36 +1,28 @@
 # To-do:
 
+- do a pass-through for input/get-data security and error parsing
 - sanitize inputs from mta website
-- do something expected if there is a curl error (no network, possibly)
 
-- make tracker main process cmdline arguments in a nice manner (e.g. -h)
-- make snapshot an object that owns the database and owns a subway
-
-- make tracker more interactive -- display time elapsed during run, specify how many snapshots to take before close, run forever mode where you can pause snapshot/update, etc.
+- argument to make logger run infinitely
+  - pass this as an argument for the number of times to run option
 
 - make sure database is limited to a certain number of snapshots
+  - add logger truncate function
+  - also add database entry limit if infinite running
 
 - make documentation on how to read the database
 
-## **High Priority**
+- possibility of partial snapshots, such as snapshots by line instead of always subway
+  - make this a logger option
+
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
-- exceptions for table operations in tracker - what if row/table doesn't exist?
-- make sure there is a valid output by operator<< if station/line/subway is not updated after initializing
-- support use of line and station by itself (need to rework destructor)
-  - support empty stationMap/stationtypes if line used in main script instead of subway
-
-## **Medium Priority**
-- delete oldest records if db file is too big
-- make subway output nicer (multiple files in a directory option)
-- exception handling (in general)
-
-## **Low Priority**:
-- use multithreading in line/subway update
-- if libcurl get error, revisit station to update again later
-- progress bar?
-
 
 ## Completed
+- do something expected if there is a curl error (no network, possibly)
+- make tracker main process cmdline arguments in a nice manner (e.g. -h)
+- make snapshot an object that owns the database and owns a subway
+- make tracker more interactive -- display time elapsed during run, specify how many snapshots to take before close
+- fix bug with negative arrival times
 - add/modify custom struct to track end boroughs for a line (stop headsign in xml), to specify direction
 - make stuff faster with multithreading! particularly with lines, one thread per line?
 - get rid of the weird trainptr structure (it saves memory)

@@ -6,16 +6,6 @@
 
 #include <common.h>
 
-struct Table {
-    Table(const std::string& name, 
-          const std::vector<std::pair<std::string, std::string>> columns):
-        name(name), columns(columns) {}
-
-    const std::string name;
-    const std::vector<std::pair<std::string, std::string>> columns; //name, data type
-};
-
-
 namespace sqlite {
     sqlite3* open_db(const std::string& db_name); //create/open
 

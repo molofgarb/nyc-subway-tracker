@@ -22,36 +22,37 @@ Station::Station(const std::string& name,
 int Station::update() {
     nearby.clear();
 
-    //get xml with arrival data
-    const std::vector<std::string> headers{ //headers in get request
+    // headers in get request
+    const std::vector<std::string> headers{ 
         "apikey: " + constant::STATION_API_KEY,
         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     };
     std::string data = "";
-    get_page::get_page(constant::STATION_URL + stopID, headers, data); //write xml page to xmlData
+
+    if (get_page::get_page(constant::STATION_URL + stopID, headers, data))
+        common::panic(FILENAME, "Station::update", "curl"); 
     
-    // parse xml data
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_buffer_inplace(data.data(), data.size());
-    if (!result)
-        common::panic(FILENAME, "update");
-
-    //update vector nearby with train info
-    populateNearby(doc); 
-
     update_time = time(nullptr);
     update_ftime = common::formatTime(&update_time);
+
+    // parse xml data
+    pugi::xml_document doc;
+    if (!(doc.load_buffer_inplace(data.data(), data.size())))
+        common::panic(FILENAME, "update");
+
+    // update vector nearby with train info
+    populateNearby(doc); 
+
     return 0;
 } 
 
-//populates nearby vector with info on nearby trains using an XML file in local dir
+// populates nearby vector with info on nearby trains using an XML file in local dir
+// doc can't be passed as a const otherwise we can't traverse the tree
 int Station::populateNearby(pugi::xml_document& doc) {
     pugi::xml_node root = doc.child("LinkedValues");
 
     // for each type of train (ex. Manhattan-bound F)
-    for (auto& incomingTrainType: 
-         root.child("item").child("groups").children("groups") 
-    ) {
+    for (auto& incomingTrainType : root.child("item").child("groups").children("groups")) {
         // get info about the type of train
         std::string name = incomingTrainType.child("route").child("id").child("id").text().as_string();
         int dirID = incomingTrainType.child("times").child("times").child("directionId").text().as_int();
@@ -71,11 +72,28 @@ int Station::populateNearby(pugi::xml_document& doc) {
             common::panic(FILENAME, "populateNearby", name + " " + std::to_string(dirID));
 
         //check incomings of this type and add to nearby vector
-        for (auto& incomingTrain: incomingTrainType.child("times").children("times")) { 
-            time_t time = //in unix time, realtime is the number used on webpage
-                    incomingTrain.child("serviceDay").text().as_int() +
-                    incomingTrain.child("realtimeArrival").text().as_int(); 
+        for (auto& incomingTrain : incomingTrainType.child("times").children("times")) { 
 
+            // get the unix time of the current date
+            // service day should be a nonnegative int
+            time_t serviceDay = incomingTrain.child("serviceDay").text().as_int();
+            if (serviceDay < 0)
+                common::panic(FILENAME, "populateNearby", "serviceDay: " + std::to_string(serviceDay));
+
+            // get the unix time of the minutes until arrival
+            // arrivalTime should be a nonnegative int
+            // sometimes the realtimeArrival field gives -1 -- in that case, use scheduledArrival
+            time_t arrivalTime = incomingTrain.child("realtimeArrival").text().as_int();
+            if (arrivalTime < 0)
+                arrivalTime = incomingTrain.child("scheduledArrival").text().as_int();
+            if (arrivalTime < 0)
+                common::panic(FILENAME, "Station::populateNearby", "arrivalTime: " + std::to_string(arrivalTime));
+
+            time_t time = serviceDay + arrivalTime;
+
+            // add this train into the nearby vector
+            // sometimes there are duplicate trains (same realtime arrival, type,
+            // and direction) but that is fine
             nearby.emplace_back(
                 trainptr, headsign, time, common::formatTime(&time)
             );

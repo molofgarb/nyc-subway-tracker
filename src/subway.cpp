@@ -9,6 +9,7 @@
 
 #include <subway.h>
 
+#define FILENAME "line.cpp"
 #define DEBUG_UPDATETHREAD 0
 
 using st_ptr = std::shared_ptr<Station>;
@@ -18,7 +19,9 @@ Subway::Subway() {
         "apikey: " + constant::SUBWAY_API_KEY,
     };
     std::string data = "";
-    get_page::get_page(constant::SUBWAY_URL, headers, data);
+
+    if (get_page::get_page(constant::SUBWAY_URL, headers, data))
+        common::panic(FILENAME, "Line::line", "curl"); 
 
     parseSubwayJSON(data);
 }

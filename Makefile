@@ -34,8 +34,8 @@ PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
 
 DEPOBJECTS		:= ${PUGIXMLOBJ}
 
-LDFLAGS 		:= -L${BUILDPATH}/curl/lib/.libs -lcurl 
-LDFLAGS 		+= -L${BUILDPATH}/sqlite/.libs -lsqlite3 
+LDFLAGS 		:= -L ${BUILDPATH}/curl/lib/.libs -l curl 
+LDFLAGS 		+= -L ${BUILDPATH}/sqlite/.libs -l sqlite3 
 
 # Build (Project Sources and Objects)
 SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})

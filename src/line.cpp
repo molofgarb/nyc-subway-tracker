@@ -8,6 +8,8 @@
 
 #include <line.h>
 
+#define FILENAME "line.cpp"
+
 using st_ptr = std::shared_ptr<Station>;
 
 // constructor
@@ -20,7 +22,9 @@ Line::Line(const std::string& name,
         "apikey: " + constant::LINE_API_KEY
     };
     std::string data = "";
-    get_page::get_page(constant::LINE_URL + ID, headers, data);
+
+    if (get_page::get_page(constant::LINE_URL + ID, headers, data));
+        common::panic(FILENAME, "Line::line", "curl"); 
 
     parseLineJSON(data, allStations);
 }

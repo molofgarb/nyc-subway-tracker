@@ -38,6 +38,7 @@ enum {
 };
 
 int main(int argc, char* argv[]) {
+    time_t starttime = std::time(nullptr);
     std::map<int, int> options{
         {MODE, SILENT},
         {NUM_SNAPSHOTS, 1},
@@ -56,17 +57,17 @@ int main(int argc, char* argv[]) {
 
     //initialize db and have db point to it
     std::cout << timestr() << "Initializing database..." << std::endl;
-    sqlite3* db = tracker::snapshot_db_initialize(); 
+    sqlite3* db = tracker::snapshot_db_initialize();
     std::cout << timestr() << "Initialized database.\n" << std::endl;
 
     // subway object that holds last system check status
     // this will take some time but not much compute
     std::cout << timestr() << "Initializing subway..." << std::endl;
-    Subway subway; 
+    Subway subway;
     std::cout << timestr() << "Initialized subway.\n" << std::endl;
 
     // print header
-    std::cout << "Performing " << options[NUM_SNAPSHOTS] << " updates with " << 
+    std::cout << "Performing " << options[NUM_SNAPSHOTS] << " updates with " <<
         options[TIME_BT_SNAPSHOTS] << " minute between each update.\n" << std::endl;
 
     // perform updates and snapshots
@@ -74,12 +75,12 @@ int main(int argc, char* argv[]) {
 
         //update subway object -- get current system status
         std::cout << timestr() << "Starting Update #" << i + 1 << "..." << std::endl;
-        subway.update(); 
+        subway.update();
         std::cout << timestr() << "Finished Update #" << i + 1 << ".\n" << std::endl;
-        
+
         //log current system status in db
         std::cout << timestr() << "Starting Snapshot #" << i + 1 << "..." << std::endl;
-        tracker::snapshot(subway, db); 
+        tracker::snapshot(subway, db);
         std::cout << timestr() << "Finished Snapshot #" << i + 1 << ".\n" << std::endl;
 
         if (i != options[NUM_SNAPSHOTS] - 1) { //sleep if not last snapshot
@@ -88,8 +89,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::cout << timestr() << "All snapshot data can be found in " << db_filename << std::endl;
-    
+    std::cout << "All snapshot data can be found in " << db_filename << std::endl;
+    std::cout << "Time elapsed: " << std::time(nullptr) - starttime << " seconds." << std::endl;
+
     // std::cout << common::formatTime() << std::endl;
     // <DEBUG>
     if (DEBUG_SUBWAYOUT) {
@@ -126,69 +128,69 @@ int parseArgs(int argc, char* argv[], std::map<int, int>& options, std::string& 
         std::cout << "  " << "-t\t" << "time between snapshots in minutes" << std::endl;
         std::cout << std::endl;
 
-        std::cout << 
-            "DB_file: name of the file that the log DB entries should be" << 
+        std::cout <<
+            "DB_file: name of the file that the log DB entries should be" <<
             "stored in. The default is \"" <<
             constant::DB_NAME <<
-            "\"." 
+            "\"."
         << std::endl;
         exit(0);
     }
 
     for (int i = 1; i < argc; i++) {
         switch (argsmap[argv[i]]) {
-            // interactive mode
-            case (INTERACTIVE):
-                // make sure that a duplicate argument has not been made
-                if (flags.find(MODE) != flags.end())      invalid_arg(argv[i]);
+        // interactive mode
+        case (INTERACTIVE):
+            // make sure that a duplicate argument has not been made
+            if (flags.find(MODE) != flags.end())      invalid_arg(argv[i]);
 
-                options[MODE] = INTERACTIVE;
-                flags.insert(MODE);
-                break;
+            options[MODE] = INTERACTIVE;
+            flags.insert(MODE);
+            break;
 
-            // silent mode -- default options used if not provided in args
-            case (SILENT):
-                // make sure that a duplicate argument has not been made
-                if (flags.find(MODE) != flags.end())      invalid_arg(argv[i]);
+        // silent mode -- default options used if not provided in args
+        case (SILENT):
+            // make sure that a duplicate argument has not been made
+            if (flags.find(MODE) != flags.end())      invalid_arg(argv[i]);
 
-                options[MODE] = SILENT;
-                flags.insert(MODE);
-                break;
+            options[MODE] = SILENT;
+            flags.insert(MODE);
+            break;
 
-            // number of snapshots to take
-            case (NUM_SNAPSHOTS):
-                // make sure that a duplicate argument has not been made
-                if (flags.find(NUM_SNAPSHOTS) != flags.end())   invalid_arg(argv[i]);
+        // number of snapshots to take
+        case (NUM_SNAPSHOTS):
+            // make sure that a duplicate argument has not been made
+            if (flags.find(NUM_SNAPSHOTS) != flags.end())   invalid_arg(argv[i]);
 
-                // make sure that a next argument is provided and that it is right type
-                if (++i == argc)                                invalid_arg(argv[i - 1]);
-                if (atoi(argv[i]) == 0)                         invalid_arg(argv[i]);
+            // make sure that a next argument is provided and that it is right type
+            if (++i == argc)                                invalid_arg(argv[i - 1]);
+            if (atoi(argv[i]) == 0)                         invalid_arg(argv[i]);
 
-                options[NUM_SNAPSHOTS] = atoi(argv[i]);
-                flags.insert(NUM_SNAPSHOTS);
-                break;
+            options[NUM_SNAPSHOTS] = atoi(argv[i]);
+            flags.insert(NUM_SNAPSHOTS);
+            break;
 
-            // time between snapshots
-            case (TIME_BT_SNAPSHOTS):
-                // make sure that a duplicate argument has not been made
-                if (flags.find(TIME_BT_SNAPSHOTS) != flags.end())   invalid_arg(argv[i]);
+        // time between snapshots
+        case (TIME_BT_SNAPSHOTS):
+            // make sure that a duplicate argument has not been made
+            if (flags.find(TIME_BT_SNAPSHOTS) != flags.end())   invalid_arg(argv[i]);
 
-                // make sure that a next argument is provided and that it is right type
-                if (++i == argc)                                    invalid_arg(argv[i - 1]);
-                if (atoi(argv[i]) == 0)                             invalid_arg(argv[i]);
+            // make sure that a next argument is provided and that it is right type
+            if (++i == argc)                                    invalid_arg(argv[i - 1]);
+            if (atoi(argv[i]) == 0)                             invalid_arg(argv[i]);
 
-                options[TIME_BT_SNAPSHOTS] = atoi(argv[i]);
-                flags.insert(TIME_BT_SNAPSHOTS);
-                break;
+            options[TIME_BT_SNAPSHOTS] = atoi(argv[i]);
+            flags.insert(TIME_BT_SNAPSHOTS);
+            break;
 
-            default:
-                // if database file name, last arg
-                // we just check that it's not an option, it can have any name format
-                if ( (i == argc - 1) && (argv[i][0] != '-') )
-                    db_filename = std::string(argv[i]);
-                else
-                    invalid_arg(argv[i]);
-                break;
+        default:
+            // if database file name, last arg
+            // we just check that it's not an option, it can have any name format
+            if ( (i == argc - 1) && (argv[i][0] != '-') )
+                db_filename = std::string(argv[i]);
+            else
+                invalid_arg(argv[i]);
+            break;
         }
     }
 

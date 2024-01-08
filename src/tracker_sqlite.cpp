@@ -10,7 +10,7 @@
 
 #define FILENAME "tracker_sqlite.cpp"
 #define DEBUG_SQLITE_ZSQL 0
-#define DEBUG_SQLITE_DUP 1
+#define DEBUG_SQLITE_DUP 0
 
 namespace sqlite {
 

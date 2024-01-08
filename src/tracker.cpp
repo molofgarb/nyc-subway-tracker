@@ -33,7 +33,11 @@ sqlite3* snapshot(const Subway& subway, sqlite3* db) {
 
     std::vector<std::string> stationData{
         tracker::subway_snapshot(subway, db, time),
-        common::formatTime()
+
+        "Subway",
+
+        common::formatTime(&time),
+        std::to_string(time)
     };
     sqlite::insert_row(db, constant::SNAPSHOT_TABLE, stationData);
 
@@ -49,7 +53,7 @@ const std::string subway_snapshot(const Subway& subway, sqlite3* db, time_t time
         common::panic(FILENAME, "subway_snapshot", "no db");
 
     //make table for subway table that holds stations
-    const std::string tableName = "Subway_" + common::formatTime(&time, true);
+    const std::string tableName = "Subway_" + common::formatTime(&time, common::SQLITE);
 
     //table containing every station in snapshot
     Table table(
@@ -81,12 +85,12 @@ const std::string subway_snapshot(const Subway& subway, sqlite3* db, time_t time
     return tableName;
 }
 
-const std::string line_snapshot(const Line& line, sqlite3* db, time_t time) {
+const std::string line_snapshot(const Line& line, sqlite3* db, time_t time, bool snapshot_stations) {
     if (db == nullptr || time == 0)
         common::panic(FILENAME, "lines_snapshot", "no db");
 
     // make table for line
-    const std::string tableName = "Line_" + line.getName()  + "_" + common::formatTime(&time, true);
+    const std::string tableName = "Line_" + line.getName()  + "_" + common::formatTime(&time, common::SQLITE);
     Table table = Table(
         tableName,
         constant::LINES_COLUMNS
@@ -96,11 +100,21 @@ const std::string line_snapshot(const Line& line, sqlite3* db, time_t time) {
     // add entries for each station in line
     // station update NOT performed -- subway_snapshot will do it
     for (const auto& station : line.getStations()) {
+        std::string stationName;
+
+        // choose whether to update the station or not
+        if (snapshot_stations) 
+            stationName = tracker::station_snapshot(*station, db, time);
+        else 
+            stationName = "Station_" + station->getID() + "_" + common::formatTime(&time);
+
         std::vector<std::string> data{
-            "Station_" + station->getID() + "_" + common::formatTime(&time),
+            stationName,
             station->getID(),
             station->getName(),
-            station->getfTime()
+
+            station->getfTime(),
+            std::to_string(station->getTime())
         };
         sqlite::insert_row(db, table, data); // add new station table into subway snapshot
     }
@@ -115,7 +129,7 @@ const std::string station_snapshot(const Station& station, sqlite3* db, time_t t
         common::panic(FILENAME, "subway_station_snapshot", "no db");
 
     //make table for station
-    const std::string tableName = "Station_" + station.getID() + "_" + common::formatTime(&time, true);
+    const std::string tableName = "Station_" + station.getID() + "_" + common::formatTime(&time, common::SQLITE);
     Table table = Table(
         tableName,
         constant::STATION_COLUMNS
@@ -123,20 +137,30 @@ const std::string station_snapshot(const Station& station, sqlite3* db, time_t t
     sqlite::create_new_table(db, table);
 
     //add entries for each nearby arrival
-    size_t i = 0;
     for (const auto& arrival : station.getNearby()) {
         time_t timeUntilArrival = arrival.time - station.getTime();
-        std::string strtimeUntilArrival = 
-            std::to_string(timeUntilArrival / 60) + ":" + std::to_string(timeUntilArrival % 60);
+
+        // convert time until arrival
+        // if the time until arrival is negative, just report it as N/A
+        std::string strtimeUntilArrival = "N/A";
+        if (timeUntilArrival >= 0)
+            strtimeUntilArrival = common::formatTime(&timeUntilArrival, common::MINSEC);
 
         std::vector<std::string> data{
-            "Nearby_" + arrival.train->name + "_" + arrival.ftime + "_" + std::to_string(i++),
+            "Nearby_" + arrival.train->name + "_" + 
+                std::to_string(arrival.train->dirID) + "_" + arrival.ftime,
+
             arrival.train->name,
             std::to_string(arrival.train->dirID),
             arrival.headsign,
+
             station.getfTime(),
             strtimeUntilArrival,
-            arrival.ftime
+            arrival.ftime,
+
+            std::to_string(station.getTime()),
+            std::to_string(timeUntilArrival),       // may be negative?
+            std::to_string(arrival.time)
         };
         sqlite::insert_row(db, table, data);
     }

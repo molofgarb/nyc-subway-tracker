@@ -16,7 +16,7 @@ bool operator<(const Train& lhs, const Train& rhs) {
 // =============================================================================
 namespace common {
 
-std::string formatTime(time_t* time, bool sqlite) {
+std::string formatTime(time_t* time, int mode) {
     time_t now;
 
     // if a time is not supplied, then get the format time for now
@@ -26,10 +26,23 @@ std::string formatTime(time_t* time, bool sqlite) {
     }
 
     char buf[32] = {0};
-    if (sqlite)
-        std::strftime(buf, 32, "%Y_%m_%d_%H_%M_%S", std::localtime(time));
-    else
+    switch (mode) {
+    case (common::NORMAL):
         std::strftime(buf, 32, "%Y-%m-%d-%H:%M:%S", std::localtime(time));
+        break;
+    case (common::SQLITE):
+        std::strftime(buf, 32, "%Y_%m_%d_%H_%M_%S", std::localtime(time));
+        break;
+    case (common::MINSEC):
+        std::strftime(buf, 32, "%M:%S", std::localtime(time));
+        break;
+    case (common::DAY_TIME):
+        std::strftime(buf, 32, "%d-%H:%M:%S", std::localtime(time));
+        break;
+    default:
+        common::panic(FILENAME, "formatTime");
+        break;
+    }
 
     return std::string(buf);
 }
@@ -76,10 +89,14 @@ int get_page::get_page(const std::string& url,
         // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
-        if (curl_easy_perform(curl))
-            common::panic(FILENAME, "get_page", "curl easy perform error");
-        
-        // std::cerr << "<DEBUG getPage.cpp> CURLcode: " << res << "\t URL: " << url << std::endl;
+
+        CURLcode res;
+        if ((res = curl_easy_perform(curl)))
+            while ( (res = curl_easy_perform(curl)) ) {
+                std::cerr << "<error> <common.cpp> cURL connection error " << res << ", trying again in " 
+                          << std::to_string(constant::CONNECTION_TIMEOUT_WAIT) << " seconds." << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(constant::CONNECTION_TIMEOUT_WAIT));
+            }
     }
     else return 1;
 
