@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <utility>
+#include <algorithm>
 #include <thread>
 #include <mutex>
 
@@ -13,10 +14,11 @@
 #include <iostream>
 #include <fstream>
 
+#include <cstring>
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 // external includes
 // #define CURL_STATICLIB
@@ -33,9 +35,11 @@ struct Train {
 
     std::string name; //same as name member in line
     int dirID; // 0 for north, 1 for south
+
+    
 };
 bool operator==(const Train& lhs, const Train& rhs);
-bool operator<(const Train& lhs, const Train& rhs); //(needed for std::map)
+bool operator<(const Train& lhs, const Train& rhs); 
 
 // holds an arrival to a station, which is a train, its headsign, and the time that it arrives
 struct Arrival {
@@ -60,6 +64,21 @@ struct Table {
     const std::vector<std::pair<std::string, std::string>> columns; //name, data type
 };
 
+struct NSThash {
+    size_t operator()(const Train& train) const {
+        return std::hash<std::string>{}(
+            train.name + std::to_string(train.dirID)
+        );
+    }
+
+    size_t operator()(const Arrival& arrival) const {
+        return std::hash<std::string>{}(
+            arrival.train->name + std::to_string(arrival.train->dirID) + arrival.ftime
+        );
+    }
+
+};
+
 // ===== CONSTANTS =============================================================
 
 namespace constant {
@@ -69,11 +88,19 @@ namespace constant {
 
     const unsigned int CONNECTION_TIMEOUT_WAIT = 5;
 
-    const std::map<std::string, std::string> SHUTTLE_NAMES{ //short id (valid url), name
-        {"H", "SR"}, //Franklin Av
-        {"FS", "SF"}, //Rockaway Park
-        {"GS", "S"}, //42nd St
-        {"SI", "SIR"} //Staten Island Railway (not a shuttle)
+    const size_t STATION_RESERVE_NEARBY = 9;
+
+    const size_t LINE_RESERVE_STATION = 40;
+
+    const size_t SUBWAY_RESERVE_LINES = 26;
+    const size_t SUBWAY_RESERVE_ALLSTATIONS = 496;
+    const size_t SUBWAY_RESERVE_TRAINTYPES = 52;
+
+    const std::unordered_map<std::string, std::string> SHUTTLE_NAMES{ //short id (valid url), name
+        {"H", "SR"},  // Franklin Av
+        {"FS", "SF"}, // Rockaway Park
+        {"GS", "S"},  // 42nd St
+        {"SI", "SIR"} // Staten Island Railway (not a shuttle)
     };
 
     const std::string STATION_URL = "https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY:";

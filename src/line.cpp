@@ -15,15 +15,17 @@ using st_ptr = std::shared_ptr<Station>;
 // constructor
 Line::Line(const std::string& name,
            const std::string& ID, 
-           std::map<std::string, st_ptr>& allStations, //boss of line
-           const std::set<Train>* trainTypes
+           std::unordered_map<std::string, st_ptr>& allStations, //boss of line
+           const std::unordered_set<Train, NSThash>* trainTypes
 ): name(name), ID(ID), trainTypes(trainTypes) {
+    stations.reserve(constant::LINE_RESERVE_STATION);
+
     const std::vector<std::string> headers{
         "apikey: " + constant::LINE_API_KEY
     };
     std::string data = "";
 
-    if (get_page::get_page(constant::LINE_URL + ID, headers, data));
+    if (get_page::get_page(constant::LINE_URL + ID, headers, data))
         common::panic(FILENAME, "Line::line", "curl"); 
 
     parseLineJSON(data, allStations);
@@ -31,7 +33,7 @@ Line::Line(const std::string& name,
 
 // populates stations with a station pointer for each station in lineTemp.json
 int Line::parseLineJSON(std::string& jsonData, 
-                        std::map<std::string, st_ptr>& allStations
+                        std::unordered_map<std::string, st_ptr>& allStations
 ) {
     nlohmann::json data = nlohmann::json::parse(jsonData);
     

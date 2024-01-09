@@ -10,7 +10,7 @@ class Station {
 public:
     Station(const std::string& name, 
             const std::string& stopID, 
-            const std::set<Train>* trainTypes);
+            const std::unordered_set<Train, NSThash>* trainTypes);
 
     int update(); //updates nearby trains
 
@@ -36,7 +36,7 @@ private:
     std::time_t update_time; //unix timestamp when nearby was updated
     std::string update_ftime;
 
-    const std::set<Train>* trainTypes;
+    const std::unordered_set<Train, NSThash>* trainTypes;
 };
 
 #endif

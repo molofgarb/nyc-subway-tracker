@@ -1,5 +1,8 @@
 # To-do:
 
+- multithreading snapshot writing to db, passing a lock
+- finish optimizing build process
+
 - do a pass-through for input/get-data security and error parsing
 - sanitize inputs from mta website
 
@@ -31,7 +34,7 @@
 - compile submodules as part of make
 - add include flags thing to make to make includes nicer
 - getPage into string to reduce overhead
-- log time in db for arrival as normal format instead of unix
+<!-- - log time in db for arrival as normal format instead of unix?? -->
 - fix time until arrival bug in tracker and station
 - sqlite3 stuff
 - build curl and sqlite as part of makefile process
@@ -52,13 +55,6 @@
   the current amount of data is greater than the limit, then delete to meet the limit starting from oldest
 - Make sure to scrape at not too quick of an interval that bad things happen, but enough so that every train is captured
 - Should be able to create a table to uniquely identify a train as it progresses through stations
-
-## Table Structurein tracker.cpp
-- Subway keeps stations
-  - Station keeps nearby
-- Subway keeps lines
-  - Lines keeps stations
-    - Stations keeps nearby
 
 ## Json convert:
   1. { --> \n{\n    

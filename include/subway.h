@@ -16,7 +16,7 @@ public:
     int update();
 
     const std::vector<Line>& getLines() const {return lines;}
-    const std::map<std::string, st_ptr>& getStations() const {return allStations;}
+    const std::unordered_map<std::string, st_ptr>& getStations() const {return allStations;}
     
     std::ostream& outputByStation(std::ostream& os) const;
     std::ostream& outputByLine(std::ostream& os, bool allowRepeat=true) const;
@@ -32,8 +32,8 @@ private:
     int updateThread(size_t offset);  
 
     std::vector<Line> lines;
-    std::map<std::string, st_ptr> allStations; //stationID, ptr to station
-    std::set<Train> trainTypes; //train, dummy int
+    std::unordered_map<std::string, st_ptr> allStations; //stationID, ptr to station
+    std::unordered_set<Train, NSThash> trainTypes; //train, dummy int
 
     //subway should usually update the stations instead of line
 };

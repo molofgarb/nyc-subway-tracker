@@ -15,6 +15,10 @@
 using st_ptr = std::shared_ptr<Station>;
 
 Subway::Subway() {
+    lines.reserve(constant::SUBWAY_RESERVE_LINES);
+    allStations.reserve(constant::SUBWAY_RESERVE_ALLSTATIONS);
+    trainTypes.reserve(constant::SUBWAY_RESERVE_TRAINTYPES);
+
     const std::vector<std::string> headers{
         "apikey: " + constant::SUBWAY_API_KEY,
     };
@@ -71,7 +75,7 @@ int Subway::update() {
 
     // spawn multiple threads to perform subway updates
     for (size_t offset = 0; offset < constant::THREADS; offset++)
-        threads.emplace_back(Subway::updateThread, this, offset);
+        threads.emplace_back(&Subway::updateThread, this, offset);
 
     // wait for all threads to stop
     for (auto& thread : threads)
@@ -122,7 +126,7 @@ std::ostream& Subway::outputByLine(std::ostream& os, bool allowRepeat) const {
     // do not repeat stations
     } else { 
         //tracks if station has been output
-        std::set<st_ptr> allStationsCheck{}; 
+        std::unordered_set<st_ptr> allStationsCheck{}; 
 
         for (const auto& line : lines) {
             os << "Below are the statuses for each station on the " <<

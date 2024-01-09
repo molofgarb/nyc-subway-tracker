@@ -12,8 +12,8 @@ class Line {
 public:
     Line(const std::string& name,
          const std::string& ID, 
-         std::map<std::string, st_ptr>& allStations,
-         const std::set<Train>* trainTypes
+         std::unordered_map<std::string, st_ptr>& allStations,
+         const std::unordered_set<Train, NSThash>* trainTypes
     );
 
     //updates the stations throughout the line (updates nearby for each station)
@@ -30,14 +30,14 @@ private:
 
     //used in constructor
     int parseLineJSON(std::string& jsonData, 
-                      std::map<std::string, st_ptr>& allStations
+                      std::unordered_map<std::string, st_ptr>& allStations
     );
 
     std::string name; //name as shown on subway map
     std::string ID; //id used in getting webpage; usually same as name, with exceptions
     std::vector<st_ptr> stations;
 
-    const std::set<Train>* trainTypes;
+    const std::unordered_set<Train, NSThash>* trainTypes;
 };
 
 #endif

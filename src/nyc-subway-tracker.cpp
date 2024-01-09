@@ -14,10 +14,10 @@
 #define DEBUG_SUBWAYOUT 0
 
 // parses cmdline arguments passed to pain and populates options and db_filename
-int parseArgs(int argc, char* argv[], std::map<int, int>& options, std::string& db_filename);
+int parseArgs(int argc, char* argv[], std::unordered_map<int, int>& options, std::string& db_filename);
 
 // gets values for options and db_filename interactively
-int interactive(std::map<int, int>& options, std::string& db_filename);
+int interactive(std::unordered_map<int, int>& options, std::string& db_filename);
 
 // formatted time prefix for each message for log-like format
 std::string timestr() { return "<" + common::formatTime() + "> "; }
@@ -39,7 +39,7 @@ enum {
 
 int main(int argc, char* argv[]) {
     time_t starttime = std::time(nullptr);
-    std::map<int, int> options{
+    std::unordered_map<int, int> options{
         {MODE, SILENT},
         {NUM_SNAPSHOTS, 1},
         {TIME_BT_SNAPSHOTS, 1}
@@ -103,9 +103,9 @@ int main(int argc, char* argv[]) {
 
 // =============================================================================
 
-int parseArgs(int argc, char* argv[], std::map<int, int>& options, std::string& db_filename) {
+int parseArgs(int argc, char* argv[], std::unordered_map<int, int>& options, std::string& db_filename) {
     // argument mapping
-    std::map<std::string, int> argsmap{
+    std::unordered_map<std::string, int> argsmap{
         {"-i", INTERACTIVE},
         {"-s", SILENT},
         {"-n", NUM_SNAPSHOTS},      // this takes a positive integer after
@@ -116,7 +116,7 @@ int parseArgs(int argc, char* argv[], std::map<int, int>& options, std::string& 
     // "mode" : interactive or silent
     // "snapshots" : number of snapshots to take
     // "time_bt_snapshots" : time between snapshots
-    std::set<int> flags;
+    std::unordered_set<int> flags;
 
     // help, display only if it is the only argument, then kill process
     if ( argc == 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) ) {
@@ -197,7 +197,7 @@ int parseArgs(int argc, char* argv[], std::map<int, int>& options, std::string& 
     return 0;
 }
 
-int interactive(std::map<int, int>& options, std::string& db_filename) {
+int interactive(std::unordered_map<int, int>& options, std::string& db_filename) {
     std::string buf;
 
     // get number of snapshots

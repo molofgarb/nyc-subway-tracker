@@ -1,6 +1,9 @@
-.PHONY: all build-external curl pugixml sqlite remake directories clean cleaner cleandb
+.PHONY: all _target build-external openssl curl pugixml sqlite remake directories clean cleaner cleandb
 .DEFAULT_GOAL: all
 # .SILENT:
+
+# Make Flags
+MYMAKEFLAGS		:= -j --no-print-directory
 
 # File Extensions
 SRCEXT			:= cpp
@@ -15,44 +18,25 @@ TARGETPATH 		:= bin
 
 # Compiler
 CXX 			:= g++
-CXXFLAGS 		:= -std=c++17 -g -O2 -Wall
-CXXTFLAGS		:= -static
-INCFLAGS		:= -I include
+CXXFLAGS 		:= -std=c++17 -O3 -Wall -Wextra #-g
 
-# Includes
-INCFLAGS		+= -I ${EXTPATH}/curl/include \
+# Includes and Links
+INCFLAGS		+= -I include \
+				   -I ${EXTPATH}/openssl/include \
+				   -I ${EXTPATH}/curl/include \
 				   -I ${EXTPATH}/nlohmann/single_include \
 				   -I ${EXTPATH}/pugixml/src \
 				   -I ${BUILDPATH}/sqlite
 
+LDFLAGS 		:= -L ${BUILDPATH}/openssl -l ssl \
+				   -L ${BUILDPATH}/curl/lib/.libs -l curl \
+                   -L ${BUILDPATH}/sqlite/.libs -l sqlite3 
+
 # Build and Link Externals
 EXTBUILDS 		:= 
-CURLFLAG		:= 
 
-PUGIXMLSRC		:= ${EXTPATH}/pugixml/src/pugixml.cpp
-PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
-
-DEPOBJECTS		:= ${PUGIXMLOBJ}
-
-LDFLAGS 		:= -L ${BUILDPATH}/curl/lib/.libs -l curl 
-LDFLAGS 		+= -L ${BUILDPATH}/sqlite/.libs -l sqlite3 
-
-# Build (Project Sources and Objects)
-SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
-OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
-
-# Adjust Variables depending on Environment
-ifeq ($(filter ${shell uname}, linux),) #Linux
-    TARGETEXT 	:= 
-    CURLFLAG	+= --with-openssl
-else ifeq ($(filter ${shell uname}, darwin),) #macOS
-    TARGETEXT 	:= 
-    CURLFLAG	+= --with-openssl=/opt/homebrew/opt/openssl
-else ifeq ($(filter $(shell ver), windows),) #Windows
-	TARGETEXT 	:= .exe
-    CURLFLAG	+= --with-openssl
-else
-	exit 1
+ifeq ($(wildcard ${BUILDPATH}/openssl/libssl.a),)
+    EXTBUILDS += openssl
 endif
 
 # Find Which Libraries Need to Be Built
@@ -68,61 +52,112 @@ ifeq ($(wildcard ${BUILDPATH}/sqlite/sqlite3.h),)
     EXTBUILDS += sqlite
 endif
 
+CURLFLAG		:= --without-ssl
+OPENSSLFLAG		:= no-tests no-unit-test
+
+PUGIXMLSRC		:= ${EXTPATH}/pugixml/src/pugixml.cpp
+PUGIXMLOBJ		:= ${BUILDPATH}/pugixml.${OBJEXT}
+
+DEPOBJECTS		:= ${PUGIXMLOBJ}
+
+# Build (Project Sources and Objects)
+SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
+OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
+
+# Adjust Variables depending on Environment
+ifeq ($(filter ${shell uname}, linux),) #Linux
+    TARGETEXT 	:= 
+else ifeq ($(filter ${shell uname}, darwin),) #macOS
+    TARGETEXT 	:= 
+else ifeq ($(filter $(shell ver), windows),) #Windows
+	TARGETEXT 	:= .exe
+else
+	exit 1
+endif
+
 # Target
 TARGET 			:= ${TARGETPATH}/subway-logger${TARGETEXT}
 
 # ===== BUILD MY OBJECTS ======================================================
 
-all: directories build-external ${TARGET}
+all: directories build-external _target
+
+# for releases, compiles statically
+release: _release all
+_release:
+	@$(eval CXXFLAGS += -static -static-libgcc -static-libstdc++)
+
+_target:
+	@make $(MYMAKEFLAGS) $(TARGET)
 
 ${TARGET}: ${OBJECTS} ${DEPOBJECTS} 
-	@echo building $@...
-	${CXX} ${CXXFLAGS} ${INCFLAGS} $^ $(LDFLAGS) -o $@ ||:
-	@echo ========================================
-	@echo
+	@echo building $@...; \
+	echo ${CXX} ${CXXFLAGS} ${INCFLAGS} $^ $(LDFLAGS) -o $@; \
+	echo
+	@${CXX} ${CXXFLAGS} ${INCFLAGS} $^ $(LDFLAGS) -o $@
 
 ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
-	@echo building $@...
-	${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< $(LDFLAGS) -o $@ ||:
-	@echo ========================================
-	@echo
+	@echo building $@...; \
+	echo ${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< $(LDFLAGS) -o $@; \
+	echo
+	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< $(LDFLAGS) -o $@
 
 # nlohmann's json does not need to be compiled individually
 
 # ===== BUILD EXT OBJECTS =====================================================
 
-build-external: directories ${EXTBUILDS}
+build-external: ${EXTBUILDS}
 	
+# for most of these, the process is:
+# (sometimes)
+# 1. cd into the external library's directory 
+# 2. run autoreconf -fi
+# (always)
+# 3. make the build directory and then cd into it
+# 4. run configure when in the build directory
+# 5. run make
+
+openssl:
+	@echo building openssl for curl...
+	@mkdir ${BUILDPATH}/openssl; cd ${BUILDPATH}/openssl; \
+	../../${EXTPATH}/openssl/configure $(OPENSSLFLAG); \
+	make $(MYMAKEFLAGS); \
+	echo; \
+	echo ========================================
+
 curl:
 	@echo building curl...
-	@echo
-	@cd ${EXTPATH}/curl ||:; \
-	autoreconf -fi ||:; \
-	cd ../.. ||:; \
-	mkdir ${BUILDPATH}/curl ||:; \
-	cd ${BUILDPATH}/curl ||:; \
+	@cd ${EXTPATH}/curl; \
+	autoreconf -fi; \
+	mkdir ../../${BUILDPATH}/curl; cd ../../${BUILDPATH}/curl; \
 	../../${EXTPATH}/curl/configure $(CURLFLAG)||:; \
-	make ||:; 
+	make $(MYMAKEFLAGS); \
+	echo; \
+	echo ========================================
 
 pugixml: ${PUGIXMLSRC}
-	@echo building pugixml...
-	@echo
-	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLOBJ} ||:
+	@echo building $@...; \
+	echo ${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLOBJ}; \
+	echo; \
+	echo ========================================
+	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLOBJ}; \
 
 sqlite:
 	@echo building sqlite...
-	@echo
-	@mkdir ${BUILDPATH}/sqlite ||:; \
-	cd ${BUILDPATH}/sqlite ||:; \
-	../../${EXTPATH}/sqlite/configure ||:; \
-	make ||:; \
-	make sqlite3.c ||:;
+	@cd $(EXTPATH)/sqlite; \
+	autoreconf -fi; \
+	mkdir ../../${BUILDPATH}/sqlite; cd ../../${BUILDPATH}/sqlite; \
+	../../${EXTPATH}/sqlite/configure; \
+	make $(MYMAKEFLAGS); \
+	make $(MYMAKEFLAGS) sqlite3.c; \
+	echo; \
+	echo ========================================
 
 # ===== MISC ==================================================================
 
 directories:
-	-@mkdir -p ${BUILDPATH} ||:
-	-@mkdir -p ${TARGETPATH} ||:
+	-@mkdir -p ${BUILDPATH}
+	-@mkdir -p ${TARGETPATH}
 
 remake: cleaner
 	make

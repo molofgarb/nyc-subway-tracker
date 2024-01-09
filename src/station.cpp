@@ -13,9 +13,12 @@
 //Station constructor
 Station::Station(const std::string& name, 
                  const std::string& stopID, 
-                 const std::set<Train>* trainTypes): 
+                 const std::unordered_set<Train, NSThash>* trainTypes): 
                  name(name), stopID(stopID), update_time(0), 
-                 update_ftime(""), trainTypes(trainTypes) {}
+                 update_ftime(""), trainTypes(trainTypes) 
+{
+    nearby.reserve(constant::STATION_RESERVE_NEARBY);
+}
 
 // =============================================================================
 
@@ -83,11 +86,14 @@ int Station::populateNearby(pugi::xml_document& doc) {
             // get the unix time of the minutes until arrival
             // arrivalTime should be a nonnegative int
             // sometimes the realtimeArrival field gives -1 -- in that case, use scheduledArrival
+            // if scheduled arrival is also negative, then use realtimedeparture and so on
             time_t arrivalTime = incomingTrain.child("realtimeArrival").text().as_int();
             if (arrivalTime < 0)
                 arrivalTime = incomingTrain.child("scheduledArrival").text().as_int();
             if (arrivalTime < 0)
-                common::panic(FILENAME, "Station::populateNearby", "arrivalTime: " + std::to_string(arrivalTime));
+                arrivalTime = incomingTrain.child("realtimeDeparture").text().as_int();
+            if (arrivalTime < 0)
+                arrivalTime = incomingTrain.child("scheduledDeparture").text().as_int();
 
             time_t time = serviceDay + arrivalTime;
 
