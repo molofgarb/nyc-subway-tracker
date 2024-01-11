@@ -1,5 +1,5 @@
 <h1 align=center> 
-    <img src="resources/logo-centered-transparent.png" align=center width=50>  nyc-subway-tracker 
+    <img src=".github/logo-centered-transparent.png" align=center width=50>  nyc-subway-tracker 
 </h1>
 <div align=center><img alt="GitHub" src="https://img.shields.io/github/license/molofgarb/nyc-subway-tracker"></div>
 
@@ -26,31 +26,31 @@ The following figures show examples of the data stored in the SQLite database co
 
 Fig. 1. shows the root table of the database, which keeps all snapshots taken by the logger. A station-based and line-based snapshot are taken.
 <div align=center>
-    <img src="resources/snapshots-example.png" align=center><br>
+    <img src=".github/snapshots-example.png" align=center><br>
     Fig. 1. Snapshots Table
 </div>
 
 Fig. 2. shows a line-based snapshot table. This snapshot stores the names and metadata for all lines in the subway system when the system was last checked.
 <div align=center>
-    <img src="resources/subway-lines-example.png" align=center><br>
+    <img src=".github/subway-lines-example.png" align=center><br>
     Fig. 2. Subway-Stations Table
 </div>
 
 Fig. 3. shows a line table. This table stores the names and metadata for all stations in the subway line when the subway system was last checked.
 <div align=center>
-    <img src="resources/line-example.png" align=center><br>
+    <img src=".github/line-example.png" align=center><br>
     Fig. 3. Snapshots Table
 </div>
 
 Fig. 4. shows a station-based snapshot table. This snapshot stores the names and metadata for all stations in the subway system when the system was last checked.
 <div align=center>
-    <img src="resources/subway-stations-example.png" align=center><br>
+    <img src=".github/subway-stations-example.png" align=center><br>
     Fig. 4. Snapshots Table
 </div>
 
 Fig. 5. shows a station table. This table stores the arrival times and metadata for all subway trains that are known to be heading toward the station when the station was last checked.
 <div align=center>
-    <img src="resources/station-example.png" align=center><br>
+    <img src=".github/station-example.png" align=center><br>
     Fig. 5. Stations Table
 </div>
 

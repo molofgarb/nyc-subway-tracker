@@ -1,15 +1,15 @@
 [submodule "external/nlohmann"]
-	path = external/nlohmann
+	path = lib/nlohmann
 	url = https://github.com/nlohmann/json
 [submodule "external/pugixml"]
-	path = external/pugixml
+	path = lib/pugixml
 	url = https://github.com/zeux/pugixml
 [submodule "external/curl"]
-	path = external/curl
+	path = lib/curl
 	url = https://github.com/curl/curl
 [submodule "external/sqlite"]
-	path = external/sqlite
-	url = https://github.com/sqlite/sqlite
+	path = lib/sqlite
+	url = https://github.com/sqlite/sqlite.git
 [submodule "external/openssl"]
-	path = external/openssl
+	path = lib/openssl
 	url = https://github.com/openssl/openssl.git

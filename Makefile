@@ -14,7 +14,8 @@ TARGETEXT		:=
 
 # Paths
 SRCPATH 		:= src
-EXTPATH			:= external
+INCPATH			:= include
+EXTPATH			:= lib
 BUILDPATH 		:= build
 TARGETPATH 		:= bin
 
@@ -41,7 +42,7 @@ DEPOBJECTS		:= \
 
 # Includes and Links
 INCFLAGS		+= \
-				   -I include \
+				   -I $(INCPATH) \
 				   -I ${EXTPATH}/openssl/include \
 				   -I ${EXTPATH}/curl/include \
 				   -I ${EXTPATH}/nlohmann/single_include \
