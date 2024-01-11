@@ -13,11 +13,13 @@
 using st_ptr = std::shared_ptr<Station>;
 
 // constructor
-Line::Line(const std::string& name,
-           const std::string& ID, 
-           std::unordered_map<std::string, st_ptr>& allStations, //boss of line
-           const std::unordered_set<Train, NSThash>* trainTypes
-): name(name), ID(ID), trainTypes(trainTypes) {
+Line::Line(
+    const std::string& name,
+    const std::string& ID, 
+    std::unordered_map<std::string, st_ptr>& all_stations, //boss of line
+    const std::unordered_set<Train, NSThash>* train_types
+    ): name(name), ID(ID), train_types(train_types) {
+
     stations.reserve(constant::LINE_RESERVE_STATION);
 
     const std::vector<std::string> headers{
@@ -28,24 +30,25 @@ Line::Line(const std::string& name,
     if (get_page::get_page(constant::LINE_URL + ID, headers, data))
         common::panic(FILENAME, "Line::line", "curl"); 
 
-    parseLineJSON(data, allStations);
+    parseLineJSON(data, all_stations);
 }
 
 // populates stations with a station pointer for each station in lineTemp.json
-int Line::parseLineJSON(std::string& jsonData, 
-                        std::unordered_map<std::string, st_ptr>& allStations
-) {
+int Line::parseLineJSON(
+    std::string& jsonData, 
+    std::unordered_map<std::string, st_ptr>& all_stations) {
+        
     nlohmann::json data = nlohmann::json::parse(jsonData);
     
     // create a Station for each station in data
     for (const nlohmann::json& stationData : data) {
         std::string stationID = stationData["stopId"].get<std::string>().substr(8, 3);
 
-        // station exists in allStations
-        if (allStations.find(stationID) != allStations.end()) { 
-            stations.push_back(allStations.at(stationID));
+        // station exists in all_stations
+        if (all_stations.find(stationID) != all_stations.end()) { 
+            stations.push_back(all_stations.at(stationID));
 
-        // station does not exist in allStations
+        // station does not exist in all_stations
         } else { 
             if (DEBUG)
                 std::cout << "<debug> <line.cpp> <parseLineJSON> making station: " 
@@ -54,10 +57,10 @@ int Line::parseLineJSON(std::string& jsonData,
                 new Station(
                     stationData["stopName"],
                     stationID,
-                    trainTypes
+                    train_types
             ));
             stations.push_back(station);      // add to line's list of stations
-            allStations[stationID] = station; // add to all stations list kept by subway
+            all_stations[stationID] = station; // add to all stations list kept by subway
         }
 
     }

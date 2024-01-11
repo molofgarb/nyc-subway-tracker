@@ -11,12 +11,13 @@
 // ===== STATION ==============================================================
 
 //Station constructor
-Station::Station(const std::string& name, 
-                 const std::string& stopID, 
-                 const std::unordered_set<Train, NSThash>* trainTypes): 
-                 name(name), stopID(stopID), update_time(0), 
-                 update_ftime(""), trainTypes(trainTypes) 
-{
+Station::Station(
+    const std::string& name, 
+    const std::string& stopID, 
+    const std::unordered_set<Train, NSThash>* train_types): 
+    name(name), stopID(stopID), update_time(0), update_ftime(""), 
+    train_types(train_types) {
+        
     nearby.reserve(constant::STATION_RESERVE_NEARBY);
 }
 
@@ -55,11 +56,11 @@ int Station::populateNearby(pugi::xml_document& doc) {
     pugi::xml_node root = doc.child("LinkedValues");
 
     // for each type of train (ex. Manhattan-bound F)
-    for (auto& incomingTrainType : root.child("item").child("groups").children("groups")) {
+    for (auto& incoming_train_type : root.child("item").child("groups").children("groups")) {
         // get info about the type of train
-        std::string name = incomingTrainType.child("route").child("id").child("id").text().as_string();
-        int dirID = incomingTrainType.child("times").child("times").child("directionId").text().as_int();
-        std::string headsign = incomingTrainType.child("headsign").text().as_string();
+        std::string name = incoming_train_type.child("route").child("id").child("id").text().as_string();
+        int dirID = incoming_train_type.child("times").child("times").child("directionId").text().as_int();
+        std::string headsign = incoming_train_type.child("headsign").text().as_string();
 
         // swap name with name on MTA map if necessary
         if (constant::SHUTTLE_NAMES.find(name) != constant::SHUTTLE_NAMES.end()) //if name exists
@@ -70,32 +71,32 @@ int Station::populateNearby(pugi::xml_document& doc) {
             name = name.substr(0, name.size() - 1);
 
         // match train type to known train pointer
-        const Train* trainptr = &(*( trainTypes->find(Train(name, dirID)) )); //pointer to train type being checked
-        if ( trainptr == &*(trainTypes->end()) ) 
+        const Train* trainptr = &(*( train_types->find(Train(name, dirID)) )); //pointer to train type being checked
+        if ( trainptr == &*(train_types->end()) ) 
             common::panic(FILENAME, "populateNearby", name + " " + std::to_string(dirID));
 
         //check incomings of this type and add to nearby vector
-        for (auto& incomingTrain : incomingTrainType.child("times").children("times")) { 
+        for (auto& incoming_train : incoming_train_type.child("times").children("times")) { 
 
             // get the unix time of the current date
             // service day should be a nonnegative int
-            time_t serviceDay = incomingTrain.child("serviceDay").text().as_int();
-            if (serviceDay < 0)
-                common::panic(FILENAME, "populateNearby", "serviceDay: " + std::to_string(serviceDay));
+            time_t service_day = incoming_train.child("serviceDay").text().as_int();
+            if (service_day < 0)
+                common::panic(FILENAME, "populateNearby", "serviceDay: " + std::to_string(service_day));
 
             // get the unix time of the minutes until arrival
-            // arrivalTime should be a nonnegative int
+            // arrival_time should be a nonnegative int
             // sometimes the realtimeArrival field gives -1 -- in that case, use scheduledArrival
             // if scheduled arrival is also negative, then use realtimedeparture and so on
-            time_t arrivalTime = incomingTrain.child("realtimeArrival").text().as_int();
-            if (arrivalTime < 0)
-                arrivalTime = incomingTrain.child("scheduledArrival").text().as_int();
-            if (arrivalTime < 0)
-                arrivalTime = incomingTrain.child("realtimeDeparture").text().as_int();
-            if (arrivalTime < 0)
-                arrivalTime = incomingTrain.child("scheduledDeparture").text().as_int();
+            time_t arrival_time = incoming_train.child("realtimeArrival").text().as_int();
+            if (arrival_time < 0)
+                arrival_time = incoming_train.child("scheduledArrival").text().as_int();
+            if (arrival_time < 0)
+                arrival_time = incoming_train.child("realtimeDeparture").text().as_int();
+            if (arrival_time < 0)
+                arrival_time = incoming_train.child("scheduledDeparture").text().as_int();
 
-            time_t time = serviceDay + arrivalTime;
+            time_t time = service_day + arrival_time;
 
             // add this train into the nearby vector
             // sometimes there are duplicate trains (same realtime arrival, type,

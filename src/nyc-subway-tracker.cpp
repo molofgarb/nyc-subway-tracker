@@ -14,13 +14,17 @@
 #define DEBUG_SUBWAYOUT 0
 
 // parses cmdline arguments passed to pain and populates options and db_filename
-int parseArgs(int argc, char* argv[], std::unordered_map<int, int>& options, std::string& db_filename);
+int parseArgs(
+    int argc, 
+    char* argv[], 
+    std::unordered_map<int, int>& options, 
+    std::string& db_filename);
 
 // gets values for options and db_filename interactively
 int interactive(std::unordered_map<int, int>& options, std::string& db_filename);
 
 // formatted time prefix for each message for log-like format
-std::string timestr() { return "<" + common::formatTime() + "> "; }
+std::string timestr() { return "[" + common::formatTime() + "] "; }
 
 // reports the invalid argument that was given and then terminates process
 int invalid_arg(char* arg) { std::cout << "invalid argument: " << arg << std::endl; exit(1); }
@@ -55,11 +59,6 @@ int main(int argc, char* argv[]) {
 
     std::chrono::minutes sleep_time(options[NUM_SNAPSHOTS]);
 
-    //initialize db and have db point to it
-    std::cout << timestr() << "Initializing database..." << std::endl;
-    sqlite3* db = tracker::snapshot_db_initialize();
-    std::cout << timestr() << "Initialized database.\n" << std::endl;
-
     // subway object that holds last system check status
     // this will take some time but not much compute
     std::cout << timestr() << "Initializing subway..." << std::endl;
@@ -80,7 +79,7 @@ int main(int argc, char* argv[]) {
 
         //log current system status in db
         std::cout << timestr() << "Starting Snapshot #" << i + 1 << "..." << std::endl;
-        tracker::snapshot(subway, db);
+        tracker::snapshot(subway);
         std::cout << timestr() << "Finished Snapshot #" << i + 1 << ".\n" << std::endl;
 
         if (i != options[NUM_SNAPSHOTS] - 1) { //sleep if not last snapshot
@@ -103,7 +102,12 @@ int main(int argc, char* argv[]) {
 
 // =============================================================================
 
-int parseArgs(int argc, char* argv[], std::unordered_map<int, int>& options, std::string& db_filename) {
+int parseArgs(
+    int argc, 
+    char* argv[], 
+    std::unordered_map<int, int>& options, 
+    std::string& db_filename) {
+        
     // argument mapping
     std::unordered_map<std::string, int> argsmap{
         {"-i", INTERACTIVE},

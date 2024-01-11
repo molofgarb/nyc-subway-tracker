@@ -16,86 +16,144 @@
 namespace tracker {
 
 //initializes the database files used to keep track of snapshots
-sqlite3* snapshot_db_initialize() {
-    sqlite3* db = sqlite::open_db(constant::DB_NAME);
-    sqlite::create_new_table(db, constant::SNAPSHOT_TABLE);
+int snapshotDBInitialize(SqliteEnv& env) {
+    env.db = sqlite::openDB(constant::DB_NAME);
+    sqlite::createNewTable(env, constant::SNAPSHOT_TABLE);
 
-    return db;
+    return 0;
 }
 
 //takes a snapshot -- adds current system status table into db snapshot
 //Creates table Subway_Snapshots using constant::SNAPSHOT_TABLE
-sqlite3* snapshot(const Subway& subway, sqlite3* db) {
-    if (db == nullptr)
-        common::panic(FILENAME, "snapshot", "no db");
+int snapshot(const Subway& subway) {
+    // reserves enough space in statement buffer for big statement coming up
+    sqlite::reserveSqliteStatementBuf(constant::SQLITE_RESERVE_STATEMENT_BUF);
 
-    time_t time = std::time(nullptr);
+    // initialize the database environment
+    SqliteEnv env;
 
-    std::vector<std::string> stationData{
-        tracker::subway_snapshot(subway, db, time),
+    // initialize db, time, and mutex of environment
+    std::mutex mutex;
+    snapshotDBInitialize(env);    
+    env.time = std::time(nullptr);
+    env.mutex = &mutex;
+
+    // prepare snapshot data, perform snapshot stepping through subway, then execute 
+    std::vector<std::string> data{
+        tracker::subwaySnapshot(subway, env),
 
         "Subway",
 
-        common::formatTime(&time),
-        std::to_string(time)
+        common::formatTime(&env.time),
+        std::to_string(env.time)
     };
-    sqlite::insert_row(db, constant::SNAPSHOT_TABLE, stationData);
+    sqlite::insertRow(env, constant::SNAPSHOT_TABLE, data);
 
-    return db;
+    // execute all statements stored in the buffer
+    // there should be a lot of statements
+    sqlite::execzSql(env, "snapshot");
+
+    return 0;
 } 
 
 // ----------------------------------------------------------------------------
 
 //logs current subway system status as a table with station snapshots as contents
 //Creates tables like Subway_Stations_1673908573 using constant::SUBWAY_STATIONS_COLUMNS
-const std::string subway_snapshot(const Subway& subway, sqlite3* db, time_t time) {
-    if (db == nullptr || time == 0)
-        common::panic(FILENAME, "subway_snapshot", "no db");
+std::string subwaySnapshot(const Subway& subway, const SqliteEnv& env) {
+    if (env.db == nullptr || env.time == 0)
+        common::panic(FILENAME, "subway_snapshot", "no db or bad time");
 
     //make table for subway table that holds stations
-    const std::string tableName = "Subway_" + common::formatTime(&time, common::SQLITE);
+    const std::string table_name = "Subway_" + common::formatTime(&env.time, common::SQLITE);
 
     //table containing every station in snapshot
     Table table(
-        tableName,
+        table_name,
         constant::SUBWAY_COLUMNS
     ); 
-    sqlite::create_new_table(db, table);
+    sqlite::createNewTable(env, table);
 
     // add an entry for each station
-    for (const auto& stationpair : subway.getStations()) {
-        std::vector<std::string> data{
-            tracker::station_snapshot(*stationpair.second, db, time),
-            "Station",
-            (stationpair.second)->getName()
-        };
-        sqlite::insert_row(db, table, data);
-    }
+    const std::unordered_map<std::string, st_ptr> all_stations = subway.getStations();
+
+    size_t num_threads = constant::THREADS;
+
+    // if no mutex is provided, do not multithread lest there be race condition
+    if (env.mutex == nullptr)
+        num_threads = 1;
+    
+    // initialize threads vector
+    std::vector<std::thread> threads;
+    threads.reserve(num_threads);
+
+    // spawn multiple threads
+    for (size_t offset = 0; offset < num_threads; offset++)
+        threads.emplace_back(&tracker::subwaySnapshotThread, 
+            all_stations, env, table, offset, num_threads);
+
+    // wait for all threads to stop
+    for (auto& thread : threads)
+        thread.join();
 
     // add an entry for each line
+    // there aren't many lines so this probably doesn't need to be multithreaded
     for (const auto& line : subway.getLines()) {
         std::vector<std::string> data{
-            tracker::line_snapshot(line, db, time),
+            tracker::lineSnapshot(line, env),
             "Line",
             line.getName()
         };
-        sqlite::insert_row(db, table, data);
+        sqlite::insertRow(env, table, data);
     }
 
-    return tableName;
+    return table_name;
 }
 
-const std::string line_snapshot(const Line& line, sqlite3* db, time_t time, bool snapshot_stations) {
-    if (db == nullptr || time == 0)
-        common::panic(FILENAME, "lines_snapshot", "no db");
+// performs subway snapshotting for one thread
+int subwaySnapshotThread(
+    const std::unordered_map<std::string, st_ptr>& all_stations, 
+    const SqliteEnv& env, 
+    const Table& table, 
+    size_t offset,
+    size_t num_threads) {
+
+    size_t i = 0;
+    auto stationptr = all_stations.begin();
+
+    i += offset;
+    std::advance(stationptr, offset);
+    while (stationptr != all_stations.end()) {
+        std::vector<std::string> data{
+            tracker::stationSnapshot(*(*stationptr).second, env),
+            "Station",
+            (*stationptr).second->getName()
+        };
+        sqlite::insertRow(env, table, data);
+
+        // if we are safe to increment to next station, then do so
+        // otherwise, signal to while loop that we are done
+        if (i + num_threads < all_stations.size()) {
+            i += num_threads;
+            std::advance(stationptr, num_threads);
+        } else {
+            stationptr = all_stations.end();
+        }
+    }
+    return 0;
+}
+
+std::string lineSnapshot(const Line& line, const SqliteEnv& env) {
+    if (env.db == nullptr || env.time == 0)
+        common::panic(FILENAME, "lines_snapshot", "no db or bad time");
 
     // make table for line
-    const std::string tableName = "Line_" + line.getName()  + "_" + common::formatTime(&time, common::SQLITE);
+    const std::string table_name = "Line_" + line.getName()  + "_" + common::formatTime(&env.time, common::SQLITE);
     Table table = Table(
-        tableName,
+        table_name,
         constant::LINES_COLUMNS
     );
-    sqlite::create_new_table(db, table);
+    sqlite::createNewTable(env, table);
 
     // add entries for each station in line
     // station update NOT performed -- subway_snapshot will do it
@@ -103,10 +161,10 @@ const std::string line_snapshot(const Line& line, sqlite3* db, time_t time, bool
         std::string stationName;
 
         // choose whether to update the station or not
-        if (snapshot_stations) 
-            stationName = tracker::station_snapshot(*station, db, time);
+        if (SNAPSHOT_STATIONS) 
+            stationName = tracker::stationSnapshot(*station, env);
         else 
-            stationName = "Station_" + station->getID() + "_" + common::formatTime(&time);
+            stationName = "Station_" + station->getID() + "_" + common::formatTime(&env.time);
 
         std::vector<std::string> data{
             stationName,
@@ -116,25 +174,25 @@ const std::string line_snapshot(const Line& line, sqlite3* db, time_t time, bool
             station->getfTime(),
             std::to_string(station->getTime())
         };
-        sqlite::insert_row(db, table, data); // add new station table into subway snapshot
+        sqlite::insertRow(env, table, data); // add new station table into subway snapshot
     }
 
-    return tableName;
+    return table_name;
 }
 
 // logs current station status as a table with nearby arrivals as contents
 // Creates tables like Station_G14_1673908573 using constant::STATION_COLUMNS
-const std::string station_snapshot(const Station& station, sqlite3* db, time_t time) {
-    if (db == nullptr || time == 0)
-        common::panic(FILENAME, "subway_station_snapshot", "no db");
+std::string stationSnapshot(const Station& station, const SqliteEnv& env) {
+    if (env.db == nullptr || env.time == 0)
+        common::panic(FILENAME, "subway_station_snapshot", "no db or bad time");
 
     //make table for station
-    const std::string tableName = "Station_" + station.getID() + "_" + common::formatTime(&time, common::SQLITE);
+    const std::string table_name = "Station_" + station.getID() + "_" + common::formatTime(&env.time, common::SQLITE);
     Table table = Table(
-        tableName,
+        table_name,
         constant::STATION_COLUMNS
     );
-    sqlite::create_new_table(db, table);
+    sqlite::createNewTable(env, table);
 
     //add entries for each nearby arrival
     for (const auto& arrival : station.getNearby()) {
@@ -159,13 +217,13 @@ const std::string station_snapshot(const Station& station, sqlite3* db, time_t t
             arrival.ftime,
 
             std::to_string(station.getTime()),
-            std::to_string(timeUntilArrival),       // may be negative?
+            std::to_string(timeUntilArrival),
             std::to_string(arrival.time)
         };
-        sqlite::insert_row(db, table, data);
+        sqlite::insertRow(env, table, data);
     }
 
-    return tableName;
+    return table_name;
 }
 
 }

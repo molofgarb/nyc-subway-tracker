@@ -16,7 +16,7 @@ bool operator<(const Train& lhs, const Train& rhs) {
 // =============================================================================
 namespace common {
 
-std::string formatTime(time_t* time, int mode) {
+std::string formatTime(const time_t* time, int mode) {
     time_t now;
 
     // if a time is not supplied, then get the format time for now
@@ -48,7 +48,7 @@ std::string formatTime(time_t* time, int mode) {
 }
 
 void panic(const std::string& filename, const std::string& funcname, const std::string& misc) {
-    std::cerr << "<error> <" << filename << "> <" << funcname << "> " << misc
+    std::cerr << "[error] [" << filename << "] [" << funcname << "] " << misc
               << std::endl;
     exit(1);
 }
@@ -56,17 +56,21 @@ void panic(const std::string& filename, const std::string& funcname, const std::
 }
 // =============================================================================
 
-size_t get_page::write_data(void* dataptr,     //pointer to data from curl
-                                   size_t size,       //size of each data element
-                                   size_t nmemb,      //num of data elements
-                                   void* outstream) { //data output stream
+size_t get_page::write_data(
+    void* dataptr,     //pointer to data from curl
+    size_t size,       //size of each data element
+    size_t nmemb,      //num of data elements
+    void* outstream) { //data output stream
+
     ((std::string*)outstream)->append((char*)dataptr, size * nmemb);
     return size * nmemb;
 }
 
-int get_page::get_page(const std::string& url, 
-                       const std::vector<std::string>& headers, 
-                       std::string& data) {
+int get_page::get_page(
+    const std::string& url,          
+    const std::vector<std::string>& headers, 
+    std::string& data) {
+        
     CURL* curl = curl_easy_init();
     
     curl_global_init(CURL_GLOBAL_DEFAULT);

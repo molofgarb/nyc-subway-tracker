@@ -23,8 +23,12 @@
 // external includes
 // #define CURL_STATICLIB
 #include <curl/curl.h>
+#include <sqlite3.h>
 
 #define DEBUG 0
+
+class Station;
+using st_ptr = std::shared_ptr<Station>;
 
 // ===== STRUCTS ===============================================================
 
@@ -52,6 +56,17 @@ struct Arrival {
     std::string headsign;
     std::time_t time; //time of arrival
     std::string ftime;
+};
+
+// represents the environment that a sqlite-related function executes in
+// think of it like an extended argument list
+struct SqliteEnv {
+    SqliteEnv(sqlite3* db = nullptr, time_t time = 0, std::mutex* mutex = nullptr):
+        db(db), time(time), mutex(mutex) {}
+
+    sqlite3* db = nullptr;
+    time_t time = 0;
+    std::mutex* mutex = nullptr;
 };
 
 // represents an SQLite table, holds the name of the table and the column headers of the table
@@ -85,16 +100,24 @@ namespace constant {
     const uint8_t THREADS = 8;
     const std::string LOGGER_NAME = "subway-logger";
     const std::string DB_NAME = "nyc-subway-tracker.db";
+    const std::string JOURNAL_MODE = "OFF";
 
     const unsigned int CONNECTION_TIMEOUT_WAIT = 5;
 
+    // memory reservations for data structures to reduce copy/swap cases
     const size_t STATION_RESERVE_NEARBY = 9;
 
     const size_t LINE_RESERVE_STATION = 40;
 
     const size_t SUBWAY_RESERVE_LINES = 26;
-    const size_t SUBWAY_RESERVE_ALLSTATIONS = 496;
-    const size_t SUBWAY_RESERVE_TRAINTYPES = 52;
+    const size_t SUBWAY_RESERVE_ALL_STATIONS = 496;
+    const size_t SUBWAY_RESERVE_TRAIN_TYPES = 52;
+
+    const size_t SQLITE_RESERVE_STATEMENT_BUF = (
+        (SUBWAY_RESERVE_LINES * 64) +
+        (SUBWAY_RESERVE_ALL_STATIONS * 64) +
+        2 * 64
+    );
 
     const std::unordered_map<std::string, std::string> SHUTTLE_NAMES{ //short id (valid url), name
         {"H", "SR"},  // Franklin Av
@@ -182,8 +205,9 @@ namespace common {
         MINSEC,
         DAY_TIME
     };
+
     // takes a time and returns it in a string (no whitespace) format
-    std::string formatTime(time_t* time = nullptr, int mode = NORMAL);
+    std::string formatTime(const time_t* time = nullptr, int mode = NORMAL);
     void panic(const std::string& filename, const std::string& funcname, const std::string& misc="");
 }
 

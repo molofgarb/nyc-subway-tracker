@@ -16,8 +16,8 @@ using st_ptr = std::shared_ptr<Station>;
 
 Subway::Subway() {
     lines.reserve(constant::SUBWAY_RESERVE_LINES);
-    allStations.reserve(constant::SUBWAY_RESERVE_ALLSTATIONS);
-    trainTypes.reserve(constant::SUBWAY_RESERVE_TRAINTYPES);
+    all_stations.reserve(constant::SUBWAY_RESERVE_ALL_STATIONS);
+    train_types.reserve(constant::SUBWAY_RESERVE_TRAIN_TYPES);
 
     const std::vector<std::string> headers{
         "apikey: " + constant::SUBWAY_API_KEY,
@@ -30,11 +30,11 @@ Subway::Subway() {
     parseSubwayJSON(data);
 }
 
-// fills out lines and trainTypes with data from subwayTemp.json
+// fills out lines and train_types with data from subwayTemp.json
 int Subway::parseSubwayJSON(std::string& jsonData) {
     nlohmann::json data = nlohmann::json::parse(jsonData);
 
-    // create trainTypes and lines
+    // create train_types and lines
     // note: dont make the iterable const, nlohmann doesn't like it :(
     for (nlohmann::json& item : data) {
         // name is something like "R" for the R train
@@ -55,11 +55,11 @@ int Subway::parseSubwayJSON(std::string& jsonData) {
                 name; //if regular subway
 
             //add a train going in each direction to shared train types record
-            trainTypes.emplace(name, 0); 
-            trainTypes.emplace(name, 1);
+            train_types.emplace(name, 0); 
+            train_types.emplace(name, 1);
 
             // add line to lines record and initialize that line
-            lines.emplace_back(name, id, allStations, &trainTypes);
+            lines.emplace_back(name, id, all_stations, &train_types);
         }
     }
     return 0;
@@ -86,12 +86,12 @@ int Subway::update() {
 
 int Subway::updateThread(size_t offset) {
     size_t i = 0;
-    auto stationptr = allStations.begin();
+    auto stationptr = all_stations.begin();
 
-    std::advance(stationptr, offset);
     i += offset;
+    std::advance(stationptr, offset);
 
-    while (stationptr != allStations.end()) {
+    while (stationptr != all_stations.end()) {
 
         // update a station
         (stationptr->second)->update();
@@ -102,11 +102,11 @@ int Subway::updateThread(size_t offset) {
 
         // if we are safe to increment to next station, then do so
         // otherwise, signal to while loop that we are done
-        if (i + constant::THREADS < allStations.size()) {
-            std::advance(stationptr, constant::THREADS);
+        if (i + constant::THREADS < all_stations.size()) {
             i += constant::THREADS;
+            std::advance(stationptr, constant::THREADS);
         } else {
-            stationptr = allStations.end();
+            stationptr = all_stations.end();
         }
 
     }
@@ -126,7 +126,7 @@ std::ostream& Subway::outputByLine(std::ostream& os, bool allowRepeat) const {
     // do not repeat stations
     } else { 
         //tracks if station has been output
-        std::unordered_set<st_ptr> allStationsCheck{}; 
+        std::unordered_set<st_ptr> all_stationsCheck{}; 
 
         for (const auto& line : lines) {
             os << "Below are the statuses for each station on the " <<
@@ -136,9 +136,9 @@ std::ostream& Subway::outputByLine(std::ostream& os, bool allowRepeat) const {
 
             for (const auto& stationptr : stations) {
 
-                if (allStationsCheck.find(stationptr) == allStationsCheck.end()) {
+                if (all_stationsCheck.find(stationptr) == all_stationsCheck.end()) {
                     os << *stationptr << '\n';
-                    allStationsCheck.insert(stationptr);
+                    all_stationsCheck.insert(stationptr);
                 }
 
             }
@@ -156,7 +156,7 @@ std::ostream& Subway::outputByStation(std::ostream& os) const {
     os << "The current time is " << common::formatTime(&now) << '.' << '\n';
 
     os << "==================================================" << '\n';
-    for (const auto& stationPair : allStations) {
+    for (const auto& stationPair : all_stations) {
         os << *(stationPair.second);
     }
     return os << '\n';

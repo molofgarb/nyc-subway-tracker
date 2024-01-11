@@ -14,21 +14,31 @@
 #include <tracker_sqlite.h>
 
 namespace tracker {
+    const bool SNAPSHOT_STATIONS = false;
     
-    sqlite3* snapshot_db_initialize(); //initializes snapshot -- creates the file
-    sqlite3* snapshot(const Subway& subway, sqlite3* db); //gets current system status and stores it in snapshots table
+    //  initializes snapshot
+    int snapshotDBInitialize(SqliteEnv& env); 
+
+    // gets current system status and stores it in snapshots table
+    int snapshot(const Subway& subway); 
 
     // Helpers //
     // they typically return the name of the table that they made
 
-    //gets current subway status in terms of station snapshot s
-    const std::string subway_snapshot(const Subway& subway, sqlite3* db = nullptr, time_t time = 0);
+    // gets current subway status in terms of station snapshot s
+    std::string subwaySnapshot(const Subway& subway, const SqliteEnv& env);
+    int subwaySnapshotThread(
+        const std::unordered_map<std::string, st_ptr>& all_stations, 
+        const SqliteEnv& env, 
+        const Table& table, 
+        size_t offset,
+        size_t num_threads);
 
     //gets current line snapshot
-    const std::string line_snapshot(const Line& line, sqlite3* db = nullptr, time_t time = 0, bool snapshot_stations = false);
+    std::string lineSnapshot(const Line& line, const SqliteEnv& env);
 
     //gets current stations snapshot
-    const std::string station_snapshot(const Station& station, sqlite3* db = nullptr, time_t time = 0);
+    std::string stationSnapshot(const Station& station, const SqliteEnv& env);
 
     //WIP
     sqlite3* subway_output(const Subway& subway, sqlite3* db);

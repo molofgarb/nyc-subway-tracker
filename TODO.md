@@ -1,8 +1,4 @@
 # To-do:
-
-- multithreading snapshot writing to db, passing a lock
-- finish optimizing build process
-
 - do a pass-through for input/get-data security and error parsing
 - sanitize inputs from mta website
 
@@ -21,6 +17,10 @@
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
 
 ## Completed
+- multithreading snapshot writing to db, passing a lock
+- add more documentation to everything
+- make everything look nice
+- finish optimizing build process
 - do something expected if there is a curl error (no network, possibly)
 - make tracker main process cmdline arguments in a nice manner (e.g. -h)
 - make snapshot an object that owns the database and owns a subway

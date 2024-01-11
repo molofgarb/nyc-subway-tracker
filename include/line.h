@@ -6,15 +6,12 @@
 // nyc-subway-tracker includes
 #include <station.h>
 
-using st_ptr = std::shared_ptr<Station>;
-
 class Line {
 public:
     Line(const std::string& name,
          const std::string& ID, 
-         std::unordered_map<std::string, st_ptr>& allStations,
-         const std::unordered_set<Train, NSThash>* trainTypes
-    );
+         std::unordered_map<std::string, st_ptr>& all_stations,
+         const std::unordered_set<Train, NSThash>* train_types);
 
     //updates the stations throughout the line (updates nearby for each station)
     int update(); 
@@ -29,15 +26,15 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const Line& rhs);
 
     //used in constructor
-    int parseLineJSON(std::string& jsonData, 
-                      std::unordered_map<std::string, st_ptr>& allStations
-    );
+    int parseLineJSON(
+        std::string& jsonData, 
+        std::unordered_map<std::string, st_ptr>& all_stations);
 
     std::string name; //name as shown on subway map
     std::string ID; //id used in getting webpage; usually same as name, with exceptions
     std::vector<st_ptr> stations;
 
-    const std::unordered_set<Train, NSThash>* trainTypes;
+    const std::unordered_set<Train, NSThash>* train_types;
 };
 
 #endif
