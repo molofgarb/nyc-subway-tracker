@@ -2,21 +2,20 @@
 - do a pass-through for input/get-data security and error parsing
 - sanitize inputs from mta website
 
-- argument to make logger run infinitely
-  - pass this as an argument for the number of times to run option
-
 - make sure database is limited to a certain number of snapshots
-  - add logger truncate function
-  - also add database entry limit if infinite running
-
-- make documentation on how to read the database
+  - add logger truncate function to reduce the database to some fixed number of entries
+    before the writing starts, and then check to reduce it every time a new snapshot is performed
 
 - possibility of partial snapshots, such as snapshots by line instead of always subway
   - make this a logger option
 
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
 
+- make documentation on how to read the database
+
 ## Completed
+- argument to make logger run infinitely
+  - pass this as an argument for the number of times to run option
 - multithreading snapshot writing to db, passing a lock
 - add more documentation to everything
 - make everything look nice
@@ -34,7 +33,7 @@
 - compile submodules as part of make
 - add include flags thing to make to make includes nicer
 - getPage into string to reduce overhead
-<!-- - log time in db for arrival as normal format instead of unix?? -->
+- log time in db for arrival as normal format instead of unix??
 - fix time until arrival bug in tracker and station
 - sqlite3 stuff
 - build curl and sqlite as part of makefile process

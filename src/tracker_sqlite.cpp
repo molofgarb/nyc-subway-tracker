@@ -24,8 +24,15 @@ int reserveSqliteStatementBuf(size_t n) {
 
 sqlite3* openDB(const std::string& db_name) {
     sqlite3* db = nullptr;
+
+    // make sure that the filename is valid (file is openable)
+    std::ofstream file(db_name);
+    if (!file)
+        common::panic(FILENAME, "open_db", "cannot open file");
+    file.close();
+
     if (sqlite3_open(db_name.data(), &db))
-        common::panic(FILENAME, "open_db", "open error");
+        common::panic(FILENAME, "open_db", "sqlite3_open error");
 
     std::string zSql = "PRAGMA journal_mode = " + constant::JOURNAL_MODE;
     if (sqlite3_exec(db, zSql.data(), nullptr, nullptr, nullptr))

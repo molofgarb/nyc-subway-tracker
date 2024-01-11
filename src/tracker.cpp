@@ -16,8 +16,8 @@
 namespace tracker {
 
 //initializes the database files used to keep track of snapshots
-int snapshotDBInitialize(SqliteEnv& env) {
-    env.db = sqlite::openDB(constant::DB_NAME);
+int snapshotDBInitialize(SqliteEnv& env, const std::string& db_name) {
+    env.db = sqlite::openDB(db_name);
     sqlite::createNewTable(env, constant::SNAPSHOT_TABLE);
 
     return 0;
@@ -25,7 +25,7 @@ int snapshotDBInitialize(SqliteEnv& env) {
 
 //takes a snapshot -- adds current system status table into db snapshot
 //Creates table Subway_Snapshots using constant::SNAPSHOT_TABLE
-int snapshot(const Subway& subway) {
+int snapshot(const Subway& subway, const std::string& db_name) {
     // reserves enough space in statement buffer for big statement coming up
     sqlite::reserveSqliteStatementBuf(constant::SQLITE_RESERVE_STATEMENT_BUF);
 
@@ -34,7 +34,7 @@ int snapshot(const Subway& subway) {
 
     // initialize db, time, and mutex of environment
     std::mutex mutex;
-    snapshotDBInitialize(env);    
+    snapshotDBInitialize(env, db_name);    
     env.time = std::time(nullptr);
     env.mutex = &mutex;
 

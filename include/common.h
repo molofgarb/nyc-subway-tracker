@@ -14,6 +14,7 @@
 #include <iostream>
 #include <fstream>
 
+#include <any>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -39,11 +40,8 @@ struct Train {
 
     std::string name; //same as name member in line
     int dirID; // 0 for north, 1 for south
-
-    
 };
 bool operator==(const Train& lhs, const Train& rhs);
-bool operator<(const Train& lhs, const Train& rhs); 
 
 // holds an arrival to a station, which is a train, its headsign, and the time that it arrives
 struct Arrival {

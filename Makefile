@@ -134,9 +134,7 @@ $(OPENSSLTARGET):
 	@echo building openssl for curl...
 	@mkdir ${BUILDPATH}/openssl; cd ${BUILDPATH}/openssl; \
 	../../${EXTPATH}/openssl/configure $(OPENSSLFLAG); \
-	make $(MYMAKEFLAGS); \
-	echo; \
-	echo ========================================
+	make $(MYMAKEFLAGS)
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
 $(CURLTARGET): $(OPENSSLTARGET)
@@ -145,16 +143,12 @@ $(CURLTARGET): $(OPENSSLTARGET)
 	autoreconf -fi; \
 	mkdir ../../${BUILDPATH}/curl; cd ../../${BUILDPATH}/curl; \
 	../../${EXTPATH}/curl/configure $(CURLFLAG)||:; \
-	make $(MYMAKEFLAGS); \
-	echo; \
-	echo ========================================
+	make $(MYMAKEFLAGS)
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
 $(PUGIXMLTARGET): ${PUGIXMLSRC}
 	@echo building $@...; \
-	echo ${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLTARGET}; \
-	echo; \
-	echo ========================================
+	echo ${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLTARGET}
 	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLTARGET}
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
@@ -165,9 +159,7 @@ $(SQLITETARGET):
 	mkdir ../../${BUILDPATH}/sqlite; cd ../../${BUILDPATH}/sqlite; \
 	../../${EXTPATH}/sqlite/configure; \
 	make $(MYMAKEFLAGS); \
-	make $(MYMAKEFLAGS) sqlite3.c; \
-	echo; \
-	echo ========================================
+	make $(MYMAKEFLAGS) sqlite3.c
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
 # ===== MISC ==================================================================

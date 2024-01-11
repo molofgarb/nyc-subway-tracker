@@ -17,10 +17,10 @@ namespace tracker {
     const bool SNAPSHOT_STATIONS = false;
     
     //  initializes snapshot
-    int snapshotDBInitialize(SqliteEnv& env); 
+    int snapshotDBInitialize(SqliteEnv& env, const std::string& db_name); 
 
     // gets current system status and stores it in snapshots table
-    int snapshot(const Subway& subway); 
+    int snapshot(const Subway& subway, const std::string& db_name); 
 
     // Helpers //
     // they typically return the name of the table that they made

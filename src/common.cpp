@@ -3,17 +3,10 @@
 
 #define FILENAME "common.cpp"
 
-//Train equality operator
 bool operator==(const Train& lhs, const Train& rhs) {
-    return ((lhs.name == rhs.name) && (lhs.dirID == rhs.dirID));
+    return (lhs.name == rhs.name) && (lhs.dirID == rhs.dirID);
 }
 
-//Train comparison operator (needed for std::map)
-bool operator<(const Train& lhs, const Train& rhs) {
-    return (lhs.name == rhs.name) ? (lhs.dirID < rhs.dirID) : (lhs.name < rhs.name);
-}
-
-// =============================================================================
 namespace common {
 
 std::string formatTime(const time_t* time, int mode) {
