@@ -9,6 +9,8 @@ MYMAKEFLAGS		:= --no-print-directory
 
 # File Extensions
 SRCEXT			:= cpp
+INCEXT			:= h
+PCHEXT			:= gch
 OBJEXT			:= o
 TARGETEXT		:= 
 
@@ -23,11 +25,15 @@ BUILDLOG 		:= $(BUILDPATH)/build.log
 
 # Compiler
 CXX 			:= g++
-CXXFLAGS 		:= -g -std=c++17 -O0 -Wall -Wextra
+CXXFLAGS 		:= -g -std=c++17 -O3 -Wall -Wextra
 
 ifdef RELEASE
     CXXFLAGS += -static -static-libgcc -static-libstdc++
 endif
+
+PCHSRC			:= $(INCPATH)/pch.$(INCEXT)
+PCHDST			:= $(BUILDPATH)/pch.$(INCEXT)
+PCHBUILD		:= $(PCHDST).$(PCHEXT)
 
 # ===== EXTERNAL BUILD =========================================================
 
@@ -41,7 +47,8 @@ DEPOBJECTS		:= \
 				   $(PUGIXMLTARGET)
 
 # Includes and Links
-INCFLAGS		+= \
+INCFLAGS		:= \
+				   -I $(BUILDPATH) \
 				   -I $(INCPATH) \
 				   -I ${EXTPATH}/openssl/include \
 				   -I ${EXTPATH}/curl/include \
@@ -73,9 +80,9 @@ SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
 OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
 
 # Adjust variables depending on environment
-ifeq ($(filter ${shell uname}, linux),) 		# Linux
+ifeq ($(filter ${shell uname}, Linux),) 		# Linux
     TARGETEXT 	:= 
-else ifeq ($(filter ${shell uname}, darwin),) 	# macOS
+else ifeq ($(filter ${shell uname}, Darwin),) 	# macOS
     TARGETEXT 	:= 
 else ifeq ($(findstring $(shell uname), NT),) 	# Windows (msys2 or cygwin)
     TARGETEXT 	:= .exe
@@ -94,14 +101,14 @@ all:
 	$(MYMAKEFLAGS) \
 	$(if $(findstring j, $(MAKEFLAGS)),,-j) \
 	_all
-_all: directories ${EXTBUILDS} _target
+_all: directories $(EXTBUILDS) _target
 
 # tells makefile to add static linking to CXXFLAGS when run
 release:
 	@$(MAKE) -$(MAKEFLAGS) $(MYMAKEFLAGS) --eval="RELEASE=0" all
 
 # wrapper to pass our makeflags into our make call to make our objects
-_target: directories ${EXTBUILDS}
+_target: directories $(EXTBUILDS)
 	@$(MAKE) -$(MAKEFLAGS) $(MYMAKEFLAGS) $(TARGET)
 
 ${TARGET}: ${OBJECTS} $(DEPOBJECTS)
@@ -117,6 +124,17 @@ ${OBJECTS}: ${BUILDPATH}/%.${OBJEXT}: ${SRCPATH}/%.${SRCEXT}
 	echo
 	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< $(LDFLAGS) -o $@
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
+
+# sadly it seems that g++/gcc doesn't benefit much from pch and having one
+# uses an additional ~50 MB for build, so it's better not to use one
+# $(PCHBUILD): $(PCHSRC)
+# 	@echo building $@...; \
+# 	echo $(CXX) $(CXXFLAGS) -x c++-header $(INCFLAGS) $< -o $(PCHBUILD); \
+# 	echo
+# 	@cp $(PCHSRC) $(PCHDST)
+# 	@$(CXX) $(CXXFLAGS) -x c++-header $(INCFLAGS) $< -o $(PCHBUILD)
+# 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
+
 
 # nlohmann's json does not need to be compiled individually
 
@@ -135,7 +153,7 @@ $(OPENSSLTARGET):
 	@echo building openssl for curl...
 	@mkdir ${BUILDPATH}/openssl; cd ${BUILDPATH}/openssl; \
 	../../${EXTPATH}/openssl/configure $(OPENSSLFLAG); \
-	make $(MYMAKEFLAGS)
+	$(MAKE) $(MYMAKEFLAGS)
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
 $(CURLTARGET): $(OPENSSLTARGET)
@@ -144,7 +162,7 @@ $(CURLTARGET): $(OPENSSLTARGET)
 	autoreconf -fi; \
 	mkdir ../../${BUILDPATH}/curl; cd ../../${BUILDPATH}/curl; \
 	../../${EXTPATH}/curl/configure $(CURLFLAG)||:; \
-	make $(MYMAKEFLAGS)
+	$(MAKE) $(MYMAKEFLAGS)
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
 $(PUGIXMLTARGET): ${PUGIXMLSRC}
@@ -153,14 +171,16 @@ $(PUGIXMLTARGET): ${PUGIXMLSRC}
 	@${CXX} -c ${CXXFLAGS} ${INCFLAGS} $< -o ${PUGIXMLTARGET}
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
+# I don't know why, but for some reason the linker fails on the first make
+# attempt, but then succeeds on the second one???? So the submake is called thrice
+# to be very sure that compilation succeeds
 $(SQLITETARGET):
 	@echo building sqlite...
 	@cd $(EXTPATH)/sqlite; \
 	autoreconf -fi; \
 	mkdir ../../${BUILDPATH}/sqlite; cd ../../${BUILDPATH}/sqlite; \
 	../../${EXTPATH}/sqlite/configure; \
-	make $(MYMAKEFLAGS); \
-	make $(MYMAKEFLAGS) sqlite3.c
+	$(MAKE) $(MYMAKEFLAGS) || $(MAKE) $(MYMAKEFLAGS) || $(MAKE) $(MYMAKEFLAGS)
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
 # ===== MISC ==================================================================
@@ -174,6 +194,7 @@ remake: clean all
 clean: 
 	-rm -rf $(TARGETPATH)
 	-rm -rf $(OBJECTS)
+#	-rm -rf $(PCHDST) $(PCHBUILD)
 	
 cleaner: clean
 	-rm -rf ${BUILDPATH}

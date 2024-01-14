@@ -1,10 +1,11 @@
 # To-do:
-- do a pass-through for input/get-data security and error parsing
-- sanitize inputs from mta website
+- finish porting tracker to new sqlite class structure
 
 - make sure database is limited to a certain number of snapshots
   - add logger truncate function to reduce the database to some fixed number of entries
     before the writing starts, and then check to reduce it every time a new snapshot is performed
+
+- turn snapshots into a class that keeps a buffer that flushes as part of the destructor
 
 - possibility of partial snapshots, such as snapshots by line instead of always subway
   - make this a logger option
@@ -14,6 +15,8 @@
 - make documentation on how to read the database
 
 ## Completed
+- do a pass-through for input/get-data security and error parsing
+- sanitize inputs from mta website
 - argument to make logger run infinitely
   - pass this as an argument for the number of times to run option
 - multithreading snapshot writing to db, passing a lock

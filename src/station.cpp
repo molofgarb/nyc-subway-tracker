@@ -1,14 +1,19 @@
+#include <pch.h>
+
 // external includes
 #include <pugixml.hpp>
 
 // nyc-subway-tracker includes
-#include <common.h>
-
 #include <station.h>
 
-#define FILENAME "station.cpp"
+#define FILENAME __builtin_FILE()
                  
 // ===== STATION ==============================================================
+
+const std::string Station::STATION_URL = 
+    "https://otp-mta-prod.camsys-apps.com/otp/routers/default/nearby?stops=MTASBWY:";
+const std::string Station::STATION_API_KEY = 
+    "Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE";
 
 //Station constructor
 Station::Station(
@@ -28,13 +33,13 @@ int Station::update() {
 
     // headers in get request
     const std::vector<std::string> headers{ 
-        "apikey: " + constant::STATION_API_KEY,
+        "apikey: " + STATION_API_KEY,
         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     };
     std::string data = "";
 
-    if (get_page::get_page(constant::STATION_URL + stopID, headers, data))
-        common::panic(FILENAME, "Station::update", "curl"); 
+    if (get_page::get_page(STATION_URL + stopID, headers, data))
+        common::panic(FILENAME, "curl"); 
     
     update_time = time(nullptr);
     update_ftime = common::formatTime(&update_time);
@@ -42,7 +47,7 @@ int Station::update() {
     // parse xml data
     pugi::xml_document doc;
     if (!(doc.load_buffer_inplace(data.data(), data.size())))
-        common::panic(FILENAME, "update");
+        common::panic(FILENAME, "doc.load_buffer_inplace");
 
     // update vector nearby with train info
     populateNearby(doc); 
@@ -57,10 +62,16 @@ int Station::populateNearby(pugi::xml_document& doc) {
 
     // for each type of train (ex. Manhattan-bound F)
     for (auto& incoming_train_type : root.child("item").child("groups").children("groups")) {
-        // get info about the type of train
-        std::string name = incoming_train_type.child("route").child("id").child("id").text().as_string();
-        int dirID = incoming_train_type.child("times").child("times").child("directionId").text().as_int();
-        std::string headsign = incoming_train_type.child("headsign").text().as_string();
+
+        // get info about the type of train, panic if there is a parsing error
+        std::string name, headsign;
+        int dirID = -1;
+        try {
+            name = incoming_train_type.child("route").child("id").child("id").text().as_string();
+            dirID = incoming_train_type.child("times").child("times").child("directionId").text().as_int();
+            headsign = incoming_train_type.child("headsign").text().as_string();
+        } catch (const std::exception& e) { common::panic(FILENAME, "xml parse error"); }
+
 
         // swap name with name on MTA map if necessary
         if (constant::SHUTTLE_NAMES.find(name) != constant::SHUTTLE_NAMES.end()) //if name exists
@@ -73,7 +84,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
         // match train type to known train pointer
         const Train* trainptr = &(*( train_types->find(Train(name, dirID)) )); //pointer to train type being checked
         if ( trainptr == &*(train_types->end()) ) 
-            common::panic(FILENAME, "populateNearby", name + " " + std::to_string(dirID));
+            common::panic(FILENAME, name + " " + std::to_string(dirID));
 
         //check incomings of this type and add to nearby vector
         for (auto& incoming_train : incoming_train_type.child("times").children("times")) { 
@@ -82,7 +93,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
             // service day should be a nonnegative int
             time_t service_day = incoming_train.child("serviceDay").text().as_int();
             if (service_day < 0)
-                common::panic(FILENAME, "populateNearby", "serviceDay: " + std::to_string(service_day));
+                common::panic(FILENAME, "serviceDay: " + std::to_string(service_day));
 
             // get the unix time of the minutes until arrival
             // arrival_time should be a nonnegative int
@@ -95,6 +106,8 @@ int Station::populateNearby(pugi::xml_document& doc) {
                 arrival_time = incoming_train.child("realtimeDeparture").text().as_int();
             if (arrival_time < 0)
                 arrival_time = incoming_train.child("scheduledDeparture").text().as_int();
+            // at this point, if it is still zero, then it means that the train is just
+            // about to arrive/depart
 
             time_t time = service_day + arrival_time;
 

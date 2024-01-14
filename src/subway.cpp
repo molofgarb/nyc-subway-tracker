@@ -1,18 +1,23 @@
+#include <pch.h>
+
 // external includes
 #include <nlohmann/json.hpp>
 
 // nyc-subway-tracker includes
-#include <common.h>
-
 #include <station.h>
 #include <line.h>
 
 #include <subway.h>
 
-#define FILENAME "line.cpp"
+#define FILENAME __builtin_FILE()
 #define DEBUG_UPDATETHREAD 0
 
 using st_ptr = std::shared_ptr<Station>;
+
+const std::string Subway::SUBWAY_URL = 
+    "https://otp-mta-prod.camsys-apps.com/otp/routers/default/index/routes";
+const std::string Subway::SUBWAY_API_KEY = 
+    "Z276E3rCeTzOQEoBPPN4JCEc6GfvdnYE";
 
 Subway::Subway() {
     lines.reserve(constant::SUBWAY_RESERVE_LINES);
@@ -20,19 +25,23 @@ Subway::Subway() {
     train_types.reserve(constant::SUBWAY_RESERVE_TRAIN_TYPES);
 
     const std::vector<std::string> headers{
-        "apikey: " + constant::SUBWAY_API_KEY,
+        "apikey: " + SUBWAY_API_KEY,
     };
     std::string data = "";
 
-    if (get_page::get_page(constant::SUBWAY_URL, headers, data))
-        common::panic(FILENAME, "Line::line", "curl"); 
+    if (get_page::get_page(SUBWAY_URL, headers, data))
+        common::panic(FILENAME, "curl"); 
 
     parseSubwayJSON(data);
 }
 
 // fills out lines and train_types with data from subwayTemp.json
 int Subway::parseSubwayJSON(std::string& jsonData) {
-    nlohmann::json data = nlohmann::json::parse(jsonData);
+    
+    // use nlohmann's library to parse JSON data
+    nlohmann::json data;
+    try { data = nlohmann::json::parse(jsonData); }
+    catch (std::exception& e) { common::panic(FILENAME, "parse error"); }
 
     // create train_types and lines
     // note: dont make the iterable const, nlohmann doesn't like it :(

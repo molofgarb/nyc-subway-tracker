@@ -1,7 +1,11 @@
+#include <pch.h>
+
+#include <curl/curl.h>
+
 // nyc-subway-tracker includes
 #include <common.h>
 
-#define FILENAME "common.cpp"
+#define FILENAME __builtin_FILE()
 
 bool operator==(const Train& lhs, const Train& rhs) {
     return (lhs.name == rhs.name) && (lhs.dirID == rhs.dirID);
@@ -33,14 +37,18 @@ std::string formatTime(const time_t* time, int mode) {
         std::strftime(buf, 32, "%d-%H:%M:%S", std::localtime(time));
         break;
     default:
-        common::panic(FILENAME, "formatTime");
+        common::panic(FILENAME, "bad mode");
         break;
     }
 
     return std::string(buf);
 }
 
-void panic(const std::string& filename, const std::string& funcname, const std::string& misc) {
+void panic(
+    const std::string& filename, 
+    const std::string& misc, 
+    const std::string& funcname) {
+
     std::cerr << "[error] [" << filename << "] [" << funcname << "] " << misc
               << std::endl;
     exit(1);
@@ -49,7 +57,9 @@ void panic(const std::string& filename, const std::string& funcname, const std::
 }
 // =============================================================================
 
-size_t get_page::write_data(
+namespace get_page {
+
+size_t write_data(
     void* dataptr,     //pointer to data from curl
     size_t size,       //size of each data element
     size_t nmemb,      //num of data elements
@@ -59,7 +69,7 @@ size_t get_page::write_data(
     return size * nmemb;
 }
 
-int get_page::get_page(
+int get_page(
     const std::string& url,          
     const std::vector<std::string>& headers, 
     std::string& data) {
@@ -91,8 +101,8 @@ int get_page::get_page(
         if ((res = curl_easy_perform(curl)))
             while ( (res = curl_easy_perform(curl)) ) {
                 std::cerr << "<error> <common.cpp> cURL connection error " << res << ", trying again in " 
-                          << std::to_string(constant::CONNECTION_TIMEOUT_WAIT) << " seconds." << std::endl;
-                std::this_thread::sleep_for(std::chrono::seconds(constant::CONNECTION_TIMEOUT_WAIT));
+                          << std::to_string(CONNECTION_TIMEOUT_WAIT) << " seconds." << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(CONNECTION_TIMEOUT_WAIT));
             }
     }
     else return 1;
@@ -102,4 +112,6 @@ int get_page::get_page(
     curl_easy_cleanup(curl);
     curl_global_cleanup();
     return 0;
+}
+
 }

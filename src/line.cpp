@@ -1,16 +1,21 @@
+#include <pch.h>
+
 // external includes
 #include <nlohmann/json.hpp>
 
 // nyc-subway-tracker includes
-#include <common.h>
-
 #include <station.h>
 
 #include <line.h>
 
-#define FILENAME "line.cpp"
+#define FILENAME __builtin_FILE()
 
 using st_ptr = std::shared_ptr<Station>;
+
+const std::string Line::LINE_URL = 
+    "https://collector-otp-prod.camsys-apps.com/schedule/MTASBWY/stopsForRoute?routeId=MTASBWY:";
+const std::string Line::LINE_API_KEY = 
+    "qeqy84JE7hUKfaI0Lxm2Ttcm6ZA0bYrP";
 
 // constructor
 Line::Line(
@@ -23,12 +28,12 @@ Line::Line(
     stations.reserve(constant::LINE_RESERVE_STATION);
 
     const std::vector<std::string> headers{
-        "apikey: " + constant::LINE_API_KEY
+        "apikey: " + LINE_API_KEY
     };
     std::string data = "";
 
-    if (get_page::get_page(constant::LINE_URL + ID, headers, data))
-        common::panic(FILENAME, "Line::line", "curl"); 
+    if (get_page::get_page(LINE_URL + ID, headers, data))
+        common::panic(FILENAME, "curl"); 
 
     parseLineJSON(data, all_stations);
 }
@@ -38,7 +43,10 @@ int Line::parseLineJSON(
     std::string& jsonData, 
     std::unordered_map<std::string, st_ptr>& all_stations) {
         
-    nlohmann::json data = nlohmann::json::parse(jsonData);
+    // use nlohmann's library to parse JSON data
+    nlohmann::json data;
+    try { data = nlohmann::json::parse(jsonData); }
+    catch (std::exception& e) { common::panic(FILENAME, "parse error"); }
     
     // create a Station for each station in data
     for (const nlohmann::json& stationData : data) {

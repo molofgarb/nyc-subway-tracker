@@ -1,7 +1,7 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include <common.h>
+#include <pch.h>
 
 // nyc-subway-tracker includes
 #include <station.h>
@@ -35,6 +35,9 @@ private:
     std::vector<st_ptr> stations;
 
     const std::unordered_set<Train, NSThash>* train_types;
+
+    static const std::string LINE_URL;
+    static const std::string LINE_API_KEY;
 };
 
 #endif

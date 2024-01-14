@@ -1,16 +1,10 @@
-#include <sqlite3.h>
-
-#include <common.h>
+#include <pch.h>
     using namespace std::chrono_literals;
 
 // nyc-subway-tracker includes
 #include <tracker.h>
-#include <subway.h>
-#include <line.h>
-#include <station.h>
 
-#define FILENAME "nyc-subway-tracker.cpp"
-
+#define FILENAME __builtin_FILE()
 #define DEBUG_SUBWAYOUT 0
 
 // parses cmdline arguments passed to pain and populates options and db_filename
@@ -69,7 +63,7 @@ int main(int argc, char* argv[]) {
 
     // parse arguments into options
     if (parseArgs(argc, argv, options))
-        common::panic(FILENAME, "main");
+        common::panic(FILENAME, "parseArgs");
 
     // interactively get options
     if (options.find(INTERACTIVE) != options.end()) interactive(options);
@@ -125,13 +119,13 @@ int main(int argc, char* argv[]) {
 
     // print a summary of the times to std::cout
     if (summary(std::cout, db_filename, start_time, end_time, update_times, snapshot_times))
-        common::panic(FILENAME, "main", "std::cout summary failed");
+        common::panic(FILENAME, "std::cout summary failed");
 
     // if a logfile was provided, then also print the summary of times to the logfile
     if (options.find(LOGFILE) != options.end()) {
         std::ofstream logfile(std::any_cast<std::string>(options[LOGFILE]));
         if (summary(logfile, db_filename, start_time, end_time, update_times, snapshot_times))
-            common::panic(FILENAME, "main", "logfile summary failed");
+            common::panic(FILENAME, "logfile summary failed");
         logfile.close();
     }
 
@@ -282,9 +276,14 @@ int parseArgs(
         default:
             // if database file name, last arg
             // we just check that it's not an option, it can have any name format
-            if (i + 1 == argc)
+            // but we also want to check if the file has a valid name
+            if (i + 1 == argc) {
+                std::ofstream file(argv[i]);
+                if (!file)
+                    invalidArg(argv[i]);
+                file.close();
                 options[DBFILE] = std::string(argv[i]);
-            else
+            } else
                 invalidArg(argv[i]);
             break;
         }

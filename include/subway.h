@@ -1,7 +1,7 @@
 #ifndef SUBWAY_H
 #define SUBWAY_H
 
-#include <common.h>
+#include <pch.h>
 
 // nyc-subway-tracker includes
 #include <station.h>
@@ -34,6 +34,9 @@ private:
     std::unordered_set<Train, NSThash> train_types; //train, dummy int
 
     //subway should usually update the stations instead of line
+
+    static const std::string SUBWAY_URL;
+    static const std::string SUBWAY_API_KEY;
 };
 
 #endif

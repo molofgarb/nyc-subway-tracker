@@ -1,47 +1,40 @@
-
+#include <pch.h>
 
 // external includes
 #include <sqlite3.h>
 
-#include <common.h>
-
 // nyc-subway-tracker includes
 #include <tracker_sqlite.h>
 
-#define FILENAME "tracker_sqlite.cpp"
+#define FILENAME __builtin_FILE()
 #define DEBUG_SQLITE_ZSQL 0
 #define DEBUG_SQLITE_DUP 0
 
-namespace sqlite {
+const std::string TSqlite::JOURNAL_MODE = "OFF";
 
-std::string sqlite_statement_buf;
-std::mutex test_mutex;
-
-int reserveSqliteStatementBuf(size_t n) {
-    sqlite_statement_buf.reserve(n);
+int TSqlite::reserveSqliteStatementBuf(size_t n) {
+    statement_buf.reserve(n);
     return 0;
 }
 
-sqlite3* openDB(const std::string& db_name) {
-    sqlite3* db = nullptr;
-
+TSqlite::TSqlite(const std::string& db_name, time_t time): time(time) {
     // make sure that the filename is valid (file is openable)
     std::ofstream file(db_name);
     if (!file)
-        common::panic(FILENAME, "open_db", "cannot open file");
+        common::panic(FILENAME, "cannot open file");
     file.close();
 
+    // open the db
     if (sqlite3_open(db_name.data(), &db))
-        common::panic(FILENAME, "open_db", "sqlite3_open error");
+        common::panic(FILENAME, "sqlite3_open error");
 
-    std::string zSql = "PRAGMA journal_mode = " + constant::JOURNAL_MODE;
+    // set journalling mode for the db
+    std::string zSql = "PRAGMA journal_mode = " + JOURNAL_MODE;
     if (sqlite3_exec(db, zSql.data(), nullptr, nullptr, nullptr))
-        common::panic(FILENAME, "open_db", "PRAGMA journal_mode error");
-
-    return db;
+        common::panic(FILENAME, "PRAGMA journal_mode error");
 }
 
-int createNewTable(const SqliteEnv& env, const Table& table) {
+int TSqlite::createNewTable(const Table& table) {
     std::string zSql = "CREATE TABLE IF NOT EXISTS " + table.name + "(\n";
     for (size_t i = 0; i < (table.columns).size(); i++) { //name, data type
         auto name = (table.columns)[i].first;
@@ -57,12 +50,12 @@ int createNewTable(const SqliteEnv& env, const Table& table) {
     //     "<name1>" "<type1>");
 
     // executes prepared zSql statement
-    writezSql(env, zSql, "create_new_table");
+    writezSql(zSql, "create_new_table");
         
     return 0;
 }
 
-int insertRow(const SqliteEnv& env, const Table& table, const std::vector<std::string>& data) {
+int TSqlite::insertRow(const Table& table, const std::vector<std::string>& data) {
     std::string zSql = "INSERT OR IGNORE INTO " + table.name + "(";
 
     //add table info
@@ -82,89 +75,139 @@ int insertRow(const SqliteEnv& env, const Table& table, const std::vector<std::s
     // VALUES (<data[0]>,<data[1]>);
 
     // executes prepared zSql statement
-    writezSql(env, zSql, "insert_row");
+    writezSql(zSql, "insert_row");
 
     return 0;
 }
 
-int deleteRow(const SqliteEnv& env, const Table& table, const std::string& data) {
+int TSqlite::deleteRow(const Table& table, const std::string& key) {
     std::string primaryKey = table.columns[0].first;
-    std::string zSql = "DELETE FROM " + table.name + "WHERE " +
-        primaryKey + "=" + "\"" + data[0] + "\"" + ";\n"; 
+    std::string zSql = "DELETE FROM " + table.name + " WHERE " +
+        primaryKey + " = " + "\"" + key + "\"" + ";\n"; 
     // DELETE FROM <tablename> WHERE <primarykey> = "<data[0]>";
+    // the delete will be okay even if the values dont exist
     
     // executes prepared zSql statement
-    writezSql(env, zSql, "delete_row");
+    writezSql(zSql, "delete_row");
 
     return 0;
 }
 
-int getRow(const SqliteEnv& env, const Table& table, const std::vector<std::string>& data) {
+static int C_getRowCallback(
+    void* TSqlite_ptr, 
+    int cols, 
+    char** types __attribute__((unused)), 
+    char** rowdata) {
+
+    // try to get a reference to the read_buf of TSqlite_obj
+    TSqlite* dbptr;
+    try { dbptr = static_cast<TSqlite*>(TSqlite_ptr); }
+    catch (std::exception& e) { common::panic(FILENAME, "static_cast failed"); }
+    dbptr->getRowCallback(cols, rowdata);
+
+    return 0;
+
+}
+int TSqlite::getRowCallback(int cols, char** rowdata) {
+    // transfer rowdata to row, and then put row in the read_buf table
+    std::vector<std::string> row;
+    for (int j = 0; j < cols; j++)
+        row.emplace_back(rowdata[j]);
+    read_buf.emplace_back(row);
+    return 0;
+}
+
+int TSqlite::getRow(
+    const Table& table, 
+    const std::string& key, 
+    std::vector<std::vector<std::string>>& data) {
+
     std::string primaryKey = table.columns[0].first;
     std::string zSql = "SELECT * FROM " + table.name + " WHERE " +
-        primaryKey + " = " + "\"" + data[0] + "\"" + ";\n";
+        primaryKey + " = " + "\"" + key + "\"" + ";\n";
     // SELECT * from <tablename> WHERE <primarykey> = "<data[0]>";
-    
-    // executes prepared zSql statement
-    // TODO: set up callback function stuff
-    writezSql(env, zSql, "get_row");
+
+    std::lock_guard lock(read_mutex);
+
+    // puts this new statement in the buffer and executes it with our callback function
+    // execzSql will execute zSql atomically
+    execzSql(zSql, &C_getRowCallback);
+
+    // copy read buffer into data
+    data = read_buf;
 
     return 0;
 }
 
-int writezSql(const SqliteEnv& env, const std::string& zSql, const std::string& funcname) {
-    if (env.db == nullptr || zSql.empty() || funcname.empty())
-        common::panic(FILENAME, funcname + ", writezSql", "args");
+// calls execzSql without allowing caller to pass a custom callback function
+int TSqlite::execStatements() {
+    return execzSql();
+}
 
-    if (env.mutex != nullptr) {
-        std::lock_guard<std::mutex> mutex(test_mutex);
-        sqlite_statement_buf.append(zSql);
-    } else {
-        sqlite_statement_buf.append(zSql);
-    }
+int TSqlite::writezSql(const std::string& zSql, const std::string& funcname) {
+    if (db == nullptr || zSql.empty() || funcname.empty())
+        common::panic(FILENAME, "args", std::string(funcname) + ", writezSql");
+
+    std::lock_guard<std::mutex> lock(db_mutex);
+    statement_buf.append(zSql);
 
     return 0;
 }
-
 
 // executes prepared zSql statement and checks arguments
-int execzSql(
-    const SqliteEnv& env, 
-    const std::string& funcname, 
-    int (*callback)(void*,int,char**,char**), 
-    void* cbarg) {
+int TSqlite::execzSql(
+    const std::string& zSql, 
+    int (*callback)(void*, int, char**, char**),
+    const std::string& funcname) {
 
-    if (env.db == nullptr || sqlite_statement_buf.empty() || funcname.empty())
-        common::panic(FILENAME, funcname + ", execzSql", "args");
+    // If given a zSql and callback function, this function executes in two stages:
+    // 1. Executes statements in the buffer without any callback
+    // 2. Executes the statement in zSql with the callback
+    // A lock on mutex is acquired before stage 1 and kept between stages and for stage 2.
+
+    // tracks if a goto was executed
+    bool goto_complete = false;
 
     // print out statement if debug on
     if (DEBUG_SQLITE_ZSQL) 
-        std::cerr << "[debug] [" << funcname << "] zSql: \n" << sqlite_statement_buf << std::endl;
+        std::cerr << "[debug] [" << funcname << "] zSql: \n" << statement_buf << std::endl;
 
-    // execute sqlite3 statement
+    std::lock_guard<std::mutex> lock(db_mutex);
+
     int ret;
     char* errmsg = nullptr;
+    int (*cb)(void*, int, char**, char**) = nullptr;
+
+    // execute sqlite3 statement
+    execzSql_execute_statement:
     if ( 
-        (ret = sqlite3_exec(env.db, sqlite_statement_buf.data(), callback, cbarg, &errmsg)) &&
+        (ret = sqlite3_exec(db, statement_buf.data(), cb, this, &errmsg)) &&
         ret != 19
     ) {
+        // emit zSql and error message if something went wrong
         std::string strerrmsg;
         if (errmsg != nullptr) {
             strerrmsg = std::string(errmsg);
             sqlite3_free(errmsg);
         }
 
-        std::cerr << "[debug] zSql: \n" << sqlite_statement_buf << std::endl;
-        common::panic(FILENAME, funcname + ", execzSql", 
-            strerrmsg + " " + std::to_string(ret));
+        std::cerr << "[debug] zSql: \n" << statement_buf << std::endl;
+        common::panic(FILENAME, strerrmsg + " " + std::to_string(ret), 
+            std::string(funcname) + ", execzSql");
     }
 
-    // SQL duplicate entry error
-    // don't panic, just make a note of it in stdout if debug on
-    if (DEBUG_SQLITE_DUP && ret == 19)
-        std::cerr << "[debug] [" << funcname << "] duplicate entry: " << sqlite_statement_buf << std::endl;
+    // clear buffer since we finished executing everything
+    statement_buf.clear();
+    
+    // return if no additional statement given or if a goto was completed
+    if (zSql == "" || goto_complete) return 0;
 
-    return 0;
-}
+    // I'm using a goto because it looks much nicer than doing a function subcall,
+    // doing some loop stuff, or copypasting that same execution block again.
 
+    // Add statement and then perform the zSql execution block again
+    statement_buf.append(zSql);
+    cb = callback;
+    goto_complete = true;
+    goto execzSql_execute_statement;
 }
