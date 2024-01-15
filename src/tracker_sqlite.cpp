@@ -19,7 +19,7 @@ int TSqlite::reserveSqliteStatementBuf(size_t n) {
 
 TSqlite::TSqlite(const std::string& db_name, time_t time): time(time) {
     // make sure that the filename is valid (file is openable)
-    std::ofstream file(db_name);
+    std::ofstream file(db_name, std::ios_base::app);
     if (!file)
         common::panic(FILENAME, "cannot open file");
     file.close();
@@ -93,30 +93,35 @@ int TSqlite::deleteRow(const Table& table, const std::string& key) {
     return 0;
 }
 
+// callbacks for getting rows. the C callback is needed for the SQLite C
+// interface and forwards the call to getRowCallBack member function
+extern "C" {
 static int C_getRowCallback(
     void* TSqlite_ptr, 
     int cols, 
-    char** types __attribute__((unused)), 
-    char** rowdata) {
+    char** data, 
+    char** colnames __attribute__((unused))) {
 
-    // try to get a reference to the read_buf of TSqlite_obj
+    // try to cast the TSqlite object
     TSqlite* dbptr;
     try { dbptr = static_cast<TSqlite*>(TSqlite_ptr); }
     catch (std::exception& e) { common::panic(FILENAME, "static_cast failed"); }
-    dbptr->getRowCallback(cols, rowdata);
+    dbptr->getRowCallback(cols, data);
 
     return 0;
-
+} 
 }
-int TSqlite::getRowCallback(int cols, char** rowdata) {
-    // transfer rowdata to row, and then put row in the read_buf table
+int TSqlite::getRowCallback(int cols, char** data) {
+    // transfer data to row, and then put row in the read_buf table
     std::vector<std::string> row;
     for (int j = 0; j < cols; j++)
-        row.emplace_back(rowdata[j]);
+        row.emplace_back(data[j]);
     read_buf.emplace_back(row);
     return 0;
 }
 
+// gets a single row's columns and returns it. the row that is acquired is the
+// one whose primary key matches the given key
 int TSqlite::getRow(
     const Table& table, 
     const std::string& key, 
@@ -137,6 +142,29 @@ int TSqlite::getRow(
     data = read_buf;
 
     return 0;
+}
+
+// does the same thing as getRow, but Sqlite statement is modified to get all
+// rows and callback is called on all rows
+int TSqlite::getAllRows(
+    const Table& table, 
+    std::vector<std::vector<std::string>>& data) {
+
+    std::string primaryKey = table.columns[0].first;
+    std::string zSql = "SELECT * FROM " + table.name + ";";
+    // SELECT * from <tablename>;
+
+    std::lock_guard lock(read_mutex);
+
+    // puts this new statement in the buffer and executes it with our callback function
+    // execzSql will execute zSql atomically
+    execzSql(zSql, &C_getRowCallback);
+
+    // copy read buffer into data
+    data = read_buf;
+
+    return 0;
+
 }
 
 // calls execzSql without allowing caller to pass a custom callback function
@@ -168,9 +196,7 @@ int TSqlite::execzSql(
     // tracks if a goto was executed
     bool goto_complete = false;
 
-    // print out statement if debug on
-    if (DEBUG_SQLITE_ZSQL) 
-        std::cerr << "[debug] [" << funcname << "] zSql: \n" << statement_buf << std::endl;
+
 
     std::lock_guard<std::mutex> lock(db_mutex);
 
@@ -180,6 +206,9 @@ int TSqlite::execzSql(
 
     // execute sqlite3 statement
     execzSql_execute_statement:
+    // print out statement if debug on
+    if (DEBUG_SQLITE_ZSQL) 
+        std::cerr << "[debug] [" << funcname << "] zSql: \n" << statement_buf << std::endl;
     if ( 
         (ret = sqlite3_exec(db, statement_buf.data(), cb, this, &errmsg)) &&
         ret != 19

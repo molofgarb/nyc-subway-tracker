@@ -27,11 +27,18 @@ public:
     int insertRow(const Table& table, const std::vector<std::string>& data);
     int deleteRow(const Table& table, const std::string& key);
 
-    // called by static function in source file
-    int getRowCallback(int cols, char** rowdata);
+    int getRowCallback(int cols, char** data);
+
+    // gets a row matching a key in a table, where key is the primary key of
+    // the row that is acquired
     int getRow(
         const Table& table, 
         const std::string& key, 
+        std::vector<std::vector<std::string>>& data);
+
+    // gets all rows in a table
+    int getAllRows(
+        const Table& table, 
         std::vector<std::vector<std::string>>& data);
 
     // execcutes all statements in statement_buf

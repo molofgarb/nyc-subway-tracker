@@ -74,7 +74,7 @@ namespace constant {
     const size_t SUBWAY_RESERVE_ALL_STATIONS = 496;
     const size_t SUBWAY_RESERVE_TRAIN_TYPES = 52;
 
-    const size_t SQLITE_RESERVE_STATEMENT_BUF = (
+    const size_t SQLITE_RESERVE_SNAPSHOT_STATEMENT_BUF = (
         (SUBWAY_RESERVE_LINES * 64) +
         (SUBWAY_RESERVE_ALL_STATIONS * 64) +
         2 * 64

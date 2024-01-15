@@ -69,6 +69,8 @@ namespace tracker {
     // gets current system status and stores it in snapshots table
     int snapshot(const Subway& subway, const std::string& db_name); 
 
+    int debugAllRows(const std::string& db_name);
+
     // Helpers //
     // they typically return the name of the table that they made
 

@@ -42,6 +42,10 @@ enum {
     TIME_BT_SNAPSHOTS,
     LOGFILE,
     DBFILE,
+    KEEP_NEW,
+    KEEP_OLD,
+    DELETE_NEW,
+    DELETE_OLD,
 
     // values for options
     NUM_SNAPSHOTS_INF = -1,
@@ -129,6 +133,8 @@ int main(int argc, char* argv[]) {
         logfile.close();
     }
 
+    tracker::debugAllRows(db_filename);
+
     // hopefully nothing went wrong
     return 0;
 
@@ -136,7 +142,7 @@ int main(int argc, char* argv[]) {
     std::cout.setstate(std::ios::goodbit);
     // std::cout << common::formatTime() << std::endl;
     // if (DEBUG_SUBWAYOUT) {
-    //     std::ofstream file("subway.txt");
+    //     std::ofstream file("subway.txt", std::ios_base::app);
     //     file << subway << std::endl;
     //     file.close();
     // }
@@ -154,8 +160,12 @@ int parseArgs(
         {"-i", INTERACTIVE},
         {"-s", SILENT},
         {"-n", NUM_SNAPSHOTS},      // this takes a positive integer after
-        {"-t", TIME_BT_SNAPSHOTS},   // this takes a positive integer after
-        {"-l", LOGFILE}             // this takes a string after
+        {"-t", TIME_BT_SNAPSHOTS},  // this takes a positive integer after
+        {"-l", LOGFILE},            // this takes a string after
+        {"-kn", KEEP_NEW},
+        {"-ko", KEEP_OLD},
+        {"-dn", DELETE_NEW},
+        {"-do", DELETE_OLD},
     };
 
     // flags for argument checking
@@ -262,7 +272,7 @@ int parseArgs(
                 invalidArg(argv[--i]);
 
             // check if the file is valid by seeing if we can open it
-            std::ofstream file(argv[i]);
+            std::ofstream file(argv[i], std::ios_base::app);
             if (!file)
                 invalidArg(argv[i]);
             file.close();
@@ -278,7 +288,7 @@ int parseArgs(
             // we just check that it's not an option, it can have any name format
             // but we also want to check if the file has a valid name
             if (i + 1 == argc) {
-                std::ofstream file(argv[i]);
+                std::ofstream file(argv[i], std::ios_base::app);
                 if (!file)
                     invalidArg(argv[i]);
                 file.close();
@@ -341,7 +351,7 @@ int interactive(std::unordered_map<int, std::any>& options) {
 
     // if buf is non-default
     if (!(buf == "")) {
-        std::ofstream file(buf);
+        std::ofstream file(buf, std::ios_base::app);
         if (!file)
             invalidArg(buf.data());
         file.close();
@@ -356,7 +366,7 @@ int interactive(std::unordered_map<int, std::any>& options) {
 
     // if buf is non-default
     if (!(buf == "")) {
-        std::ofstream file(buf);
+        std::ofstream file(buf, std::ios_base::app);
         if (!file)
             invalidArg(buf.data());
         file.close();

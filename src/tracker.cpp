@@ -23,7 +23,7 @@ int snapshot(const Subway& subway, const std::string& db_name) {
     TSqlite db(db_name, std::time(nullptr));
 
     // reserves enough space in statement buffer for big statement coming up
-    db.reserveSqliteStatementBuf(constant::SQLITE_RESERVE_STATEMENT_BUF);
+    db.reserveSqliteStatementBuf(constant::SQLITE_RESERVE_SNAPSHOT_STATEMENT_BUF);
 
     // prepare snapshot data, perform snapshot stepping through subway, then execute 
     db.createNewTable(SNAPSHOT_TABLE);
@@ -43,6 +43,23 @@ int snapshot(const Subway& subway, const std::string& db_name) {
 
     return 0;
 } 
+
+int debugAllRows(const std::string& db_name) {
+    TSqlite db(db_name, std::time(nullptr));
+
+    std::vector<std::vector<std::string>> all_rows;
+
+    db.getAllRows(SNAPSHOT_TABLE, all_rows);
+
+    for (const auto& row : all_rows) {
+        for (const auto& col : row) {
+            std::cout << col << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
 
 // ----------------------------------------------------------------------------
 
