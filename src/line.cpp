@@ -8,8 +8,6 @@
 
 #include <line.h>
 
-#define FILENAME __builtin_FILE()
-
 using st_ptr = std::shared_ptr<Station>;
 
 const std::string Line::LINE_URL = 
@@ -33,7 +31,7 @@ Line::Line(
     std::string data = "";
 
     if (get_page::get_page(LINE_URL + ID, headers, data))
-        common::panic(FILENAME, "curl"); 
+        common::panic("curl"); 
 
     parseLineJSON(data, all_stations);
 }
@@ -46,7 +44,7 @@ int Line::parseLineJSON(
     // use nlohmann's library to parse JSON data
     nlohmann::json data;
     try { data = nlohmann::json::parse(jsonData); }
-    catch (std::exception& e) { common::panic(FILENAME, "parse error"); }
+    catch (std::exception& e) { common::panic("parse error"); }
     
     // create a Station for each station in data
     for (const nlohmann::json& stationData : data) {

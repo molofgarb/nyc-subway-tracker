@@ -11,8 +11,6 @@
 
 #include <tracker.h>
 
-#define FILENAME __builtin_FILE()
-
 namespace tracker {
 
 // ===== FUNCTIONS =============================================================
@@ -35,7 +33,7 @@ int snapshot(const Subway& subway, const std::string& db_name) {
         common::formatTime(db.getTimePtr()),
         std::to_string(db.getTime())
     };
-    db.insertRow(SNAPSHOT_TABLE, data);
+    db.insertRow(SNAPSHOT_TABLE_NAME, data);
 
     // execute all statements stored in the buffer
     // there should be a lot of statements
@@ -44,19 +42,35 @@ int snapshot(const Subway& subway, const std::string& db_name) {
     return 0;
 } 
 
+
 int debugAllRows(const std::string& db_name) {
     TSqlite db(db_name, std::time(nullptr));
 
     std::vector<std::vector<std::string>> all_rows;
 
-    db.getAllRows(SNAPSHOT_TABLE, all_rows);
+    db.getAllRows(SNAPSHOT_TABLE_NAME, all_rows);
 
+    // debug, print out all rows
     for (const auto& row : all_rows) {
         for (const auto& col : row) {
             std::cout << col << " ";
         }
         std::cout << std::endl;
     }
+
+    // delete oldest snapshot in the snapshot table
+
+    // lets not assume they are sorted, so put them in a map and get the min
+    // pair of the unix time and the name of the table
+    std::map<std::string, std::string> minmap;
+    for (const auto& row : all_rows)
+        minmap[row[3]] = row[0];
+
+    // smallest key in the map is always the leftmost element (map is rb tree)
+    // make a table representing the minimum table
+    std::cout << "Deleting the table " << (*minmap.begin()).second << std::endl;
+
+    db.deleteTable(SNAPSHOT_TABLE, (*minmap.begin()).second);
 
     return 0;
 }
@@ -105,7 +119,7 @@ std::string subwaySnapshot(TSqlite& db, const Subway& subway) {
             "Line",
             line.getName()
         };
-        db.insertRow(table, data);
+        db.insertRow(table.name, data);
     }
 
     return table_name;
@@ -130,7 +144,7 @@ int subwaySnapshotThread(
             "Station",
             (*stationptr).second->getName()
         };
-        db->insertRow(table, data);
+        db->insertRow(table.name, data);
 
         // if we are safe to increment to next station, then do so
         // otherwise, signal to while loop that we are done
@@ -168,7 +182,7 @@ std::string lineSnapshot(
             stationName = tracker::stationSnapshot(db, *station);
         else 
             stationName = "Station_" + station->getID() + "_" + 
-                common::formatTime(db.getTimePtr());
+                common::formatTime(db.getTimePtr(), common::SQLITE);
 
         std::vector<std::string> data{
             stationName,
@@ -178,7 +192,7 @@ std::string lineSnapshot(
             station->getfTime(),
             std::to_string(station->getTime())
         };
-        db.insertRow(table, data); // add new station table into subway snapshot
+        db.insertRow(table.name, data); // add new station table into subway snapshot
     }
 
     return table_name;
@@ -223,7 +237,7 @@ std::string stationSnapshot(TSqlite& db, const Station& station) {
             std::to_string(timeUntilArrival),
             std::to_string(arrival.time)
         };
-        db.insertRow(table, data);
+        db.insertRow(table.name, data);
     }
 
     return table_name;

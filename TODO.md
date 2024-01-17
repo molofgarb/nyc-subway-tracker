@@ -1,11 +1,15 @@
 # To-do:
-- finish porting tracker to new sqlite class structure
+- database vacuum flag, automatically set to enable
 
 - make sure database is limited to a certain number of snapshots
   - add logger truncate function to reduce the database to some fixed number of entries
     before the writing starts, and then check to reduce it every time a new snapshot is performed
 
-- turn snapshots into a class that keeps a buffer that flushes as part of the destructor
+- modify sqlite_tracker so that it doesnt write all the table column junk
+
+- protect against sql injection
+
+- readInto function to ensure that read_buf is cleared after reads
 
 - possibility of partial snapshots, such as snapshots by line instead of always subway
   - make this a logger option
@@ -15,6 +19,7 @@
 - make documentation on how to read the database
 
 ## Completed
+- finish porting tracker to new sqlite class structure
 - do a pass-through for input/get-data security and error parsing
 - sanitize inputs from mta website
 - argument to make logger run infinitely

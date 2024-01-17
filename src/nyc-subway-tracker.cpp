@@ -4,7 +4,6 @@
 // nyc-subway-tracker includes
 #include <tracker.h>
 
-#define FILENAME __builtin_FILE()
 #define DEBUG_SUBWAYOUT 0
 
 // parses cmdline arguments passed to pain and populates options and db_filename
@@ -67,7 +66,7 @@ int main(int argc, char* argv[]) {
 
     // parse arguments into options
     if (parseArgs(argc, argv, options))
-        common::panic(FILENAME, "parseArgs");
+        common::panic("parseArgs");
 
     // interactively get options
     if (options.find(INTERACTIVE) != options.end()) interactive(options);
@@ -123,13 +122,13 @@ int main(int argc, char* argv[]) {
 
     // print a summary of the times to std::cout
     if (summary(std::cout, db_filename, start_time, end_time, update_times, snapshot_times))
-        common::panic(FILENAME, "std::cout summary failed");
+        common::panic("std::cout summary failed");
 
     // if a logfile was provided, then also print the summary of times to the logfile
     if (options.find(LOGFILE) != options.end()) {
         std::ofstream logfile(std::any_cast<std::string>(options[LOGFILE]));
         if (summary(logfile, db_filename, start_time, end_time, update_times, snapshot_times))
-            common::panic(FILENAME, "logfile summary failed");
+            common::panic("logfile summary failed");
         logfile.close();
     }
 
@@ -167,6 +166,9 @@ int parseArgs(
         {"-dn", DELETE_NEW},
         {"-do", DELETE_OLD},
     };
+    char* dc; // don't care
+    int intarg = 0;
+    errno = 0;
 
     // flags for argument checking
     // "mode" : interactive or silent
@@ -231,10 +233,12 @@ int parseArgs(
             }  
 
             // if the number given is invalid
-            if (atoi(argv[i]) == 0)                         
+            intarg = strtol(argv[i], &dc, 10);
+            if (errno == ERANGE)                         
                 invalidArg(argv[i]);
+            errno = 0;
 
-            options[NUM_SNAPSHOTS] = atoi(argv[i]);
+            options[NUM_SNAPSHOTS] = intarg;
 
         loc_case_numsnapshots_flaginsert:
             flags.insert(NUM_SNAPSHOTS);
@@ -253,10 +257,12 @@ int parseArgs(
             }  
 
             // if the number given is invalid
-            if (atoi(argv[i]) == 0)                         
+            intarg = strtol(argv[i], &dc, 10);
+            if (errno == ERANGE)                         
                 invalidArg(argv[i]);
+            errno = 0;
 
-            options[TIME_BT_SNAPSHOTS] = atoi(argv[i]);
+            options[TIME_BT_SNAPSHOTS] = intarg;
 
         loc_case_timebtsnapshots_flaginsert:
             flags.insert(TIME_BT_SNAPSHOTS);
@@ -306,6 +312,9 @@ int interactive(std::unordered_map<int, std::any>& options) {
     std::string buf;
     buf.reserve(32);
 
+    char* dc;
+    errno = 0;
+
     // decide if program should be silent
     buf.clear();
     std::cout << "Silent run (type any characters to enable silence, leave blank to disable): ";
@@ -324,8 +333,8 @@ int interactive(std::unordered_map<int, std::any>& options) {
     // if buf is non-default
     if (!(buf == "")) {
         // verify input to be positive integer
-        int bufint = atoi(buf.data());
-        if (bufint < 1) invalidArg(buf.data());
+        int bufint = strtol(buf.data(), &dc, 10);
+        if (errno == ERANGE) invalidArg(buf.data());
 
         options[NUM_SNAPSHOTS] = bufint;
     }
@@ -338,8 +347,8 @@ int interactive(std::unordered_map<int, std::any>& options) {
     // if buf is non-default
     if (!(buf == "")) {
         // verify input to be positive integer
-        int bufint = atoi(buf.data());
-        if (bufint < 1) invalidArg(buf.data());
+        int bufint = strtol(buf.data(), &dc, 10);
+        if (errno == ERANGE) invalidArg(buf.data());
 
         options[TIME_BT_SNAPSHOTS] = bufint;
     }

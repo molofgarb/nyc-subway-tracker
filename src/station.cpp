@@ -5,8 +5,6 @@
 
 // nyc-subway-tracker includes
 #include <station.h>
-
-#define FILENAME __builtin_FILE()
                  
 // ===== STATION ==============================================================
 
@@ -39,15 +37,15 @@ int Station::update() {
     std::string data = "";
 
     if (get_page::get_page(STATION_URL + stopID, headers, data))
-        common::panic(FILENAME, "curl"); 
+        common::panic("curl"); 
     
     update_time = time(nullptr);
-    update_ftime = common::formatTime(&update_time);
+    update_ftime = common::formatTime(&update_time, common::SQLITE);
 
     // parse xml data
     pugi::xml_document doc;
     if (!(doc.load_buffer_inplace(data.data(), data.size())))
-        common::panic(FILENAME, "doc.load_buffer_inplace");
+        common::panic("doc.load_buffer_inplace");
 
     // update vector nearby with train info
     populateNearby(doc); 
@@ -70,7 +68,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
             name = incoming_train_type.child("route").child("id").child("id").text().as_string();
             dirID = incoming_train_type.child("times").child("times").child("directionId").text().as_int();
             headsign = incoming_train_type.child("headsign").text().as_string();
-        } catch (const std::exception& e) { common::panic(FILENAME, "xml parse error"); }
+        } catch (const std::exception& e) { common::panic("xml parse error"); }
 
 
         // swap name with name on MTA map if necessary
@@ -84,7 +82,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
         // match train type to known train pointer
         const Train* trainptr = &(*( train_types->find(Train(name, dirID)) )); //pointer to train type being checked
         if ( trainptr == &*(train_types->end()) ) 
-            common::panic(FILENAME, name + " " + std::to_string(dirID));
+            common::panic(name + " " + std::to_string(dirID));
 
         //check incomings of this type and add to nearby vector
         for (auto& incoming_train : incoming_train_type.child("times").children("times")) { 
@@ -93,7 +91,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
             // service day should be a nonnegative int
             time_t service_day = incoming_train.child("serviceDay").text().as_int();
             if (service_day < 0)
-                common::panic(FILENAME, "serviceDay: " + std::to_string(service_day));
+                common::panic("serviceDay: " + std::to_string(service_day));
 
             // get the unix time of the minutes until arrival
             // arrival_time should be a nonnegative int
@@ -115,7 +113,7 @@ int Station::populateNearby(pugi::xml_document& doc) {
             // sometimes there are duplicate trains (same realtime arrival, type,
             // and direction) but that is fine
             nearby.emplace_back(
-                trainptr, headsign, time, common::formatTime(&time)
+                trainptr, headsign, time, common::formatTime(&time, common::SQLITE)
             );
         }
     }

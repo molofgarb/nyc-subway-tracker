@@ -36,11 +36,11 @@ struct Arrival {
 // represents an SQLite table, holds the name of the table and the column headers of the table
 struct Table {
     Table(const std::string& name, 
-          const std::vector<std::pair<std::string, std::string>>& columns):
+          const std::vector<std::string>& columns):
         name(name), columns(columns) {}
 
     const std::string name;
-    const std::vector<std::pair<std::string, std::string>> columns; //name, data type
+    const std::vector<std::string> columns; //name, data type
 };
 
 struct NSThash {
@@ -100,12 +100,15 @@ namespace common {
         DAY_TIME
     };
 
+    const bool enablePanic = true;
+
     // takes a time and returns it in a string (no whitespace) format
     std::string formatTime(const time_t* time = nullptr, int mode = NORMAL);
-    void panic(
-        const std::string& filename, 
-        const std::string& misc="", 
-        const std::string& funcname = __builtin_FUNCTION());
+    int panic(
+        const std::string& misc, 
+        const std::string& filename = __builtin_FILE(), 
+        const std::string& funcname = __builtin_FUNCTION(),
+        unsigned int line = __builtin_LINE());
 }
 
 // ===== CURL FUNCTIONS=========================================================

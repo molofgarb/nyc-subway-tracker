@@ -6,6 +6,9 @@
 // external includes
 #include <sqlite3.h>
 
+// represents a SQLite3 database
+// data is stored in a hierarchical table format:
+//   tables have entries that point to other tables, and leaf tables hold data
 class TSqlite {
 public:
     // represents the environment that a sqlite-related function executes in
@@ -13,6 +16,7 @@ public:
     TSqlite(
         const std::string& db_name, 
         time_t time = std::time(nullptr));
+    ~TSqlite();
 
     time_t getTime() const { return time; }
     const time_t* getTimePtr() const { return &time; }
@@ -20,14 +24,28 @@ public:
     // reserves memory for statement buffer
     int reserveSqliteStatementBuf(size_t n);
 
+    // opens the database in append mode with the filename db_name
     int openDB(const std::string& db_name); 
 
-    // wrappers for basic sqlite functions
+    // creates a new, hanging table. nothing initally points to this table
     int createNewTable(const Table& table);
-    int insertRow(const Table& table, const std::vector<std::string>& data);
+
+    // inserts a row of data into a table, the first col in the row holds the
+    // primary key of that row
+    int insertRow(const std::string& tablename, const std::vector<std::string>& data);
+
+    // =========================================================================
+
+    // deletes a row with a matching primary key from the table.
     int deleteRow(const Table& table, const std::string& key);
 
-    int getRowCallback(int cols, char** data);
+    // deletes the table that this primary key points to (if applicable) and 
+    // all tables under that table, recursively. this also recursively deletes 
+    // all tables that the primary keys (col 1) of this table points to.
+    // !! table is the table that contains key !!
+    int deleteTable(const Table& table, const std::string& key);
+
+    // =========================================================================
 
     // gets a row matching a key in a table, where key is the primary key of
     // the row that is acquired
@@ -37,9 +55,20 @@ public:
         std::vector<std::vector<std::string>>& data);
 
     // gets all rows in a table
+    // this function also sues getRowCallback
     int getAllRows(
-        const Table& table, 
+        const std::string& tablename, 
         std::vector<std::vector<std::string>>& data);
+
+    int getCols(
+        const std::string& tablename,
+        std::vector<std::string>& data);
+
+    // C++ callback
+    // a static function C callback is used in the source file
+    int callback(int cols, char** data);
+
+    // =========================================================================
 
     // execcutes all statements in statement_buf
     int execStatements();
@@ -72,6 +101,7 @@ private:
 
     // these are the constants:
     static const std::string JOURNAL_MODE;
+    static const std::vector<std::string> PLACEHOLDER_COL;
 };
 
     // For each snapshot:

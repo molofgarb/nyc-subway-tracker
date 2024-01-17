@@ -30,7 +30,7 @@ Subway::Subway() {
     std::string data = "";
 
     if (get_page::get_page(SUBWAY_URL, headers, data))
-        common::panic(FILENAME, "curl"); 
+        common::panic("curl"); 
 
     parseSubwayJSON(data);
 }
@@ -41,7 +41,7 @@ int Subway::parseSubwayJSON(std::string& jsonData) {
     // use nlohmann's library to parse JSON data
     nlohmann::json data;
     try { data = nlohmann::json::parse(jsonData); }
-    catch (std::exception& e) { common::panic(FILENAME, "parse error"); }
+    catch (std::exception& e) { common::panic("parse error"); }
 
     // create train_types and lines
     // note: dont make the iterable const, nlohmann doesn't like it :(

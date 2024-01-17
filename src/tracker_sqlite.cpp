@@ -6,41 +6,45 @@
 // nyc-subway-tracker includes
 #include <tracker_sqlite.h>
 
-#define FILENAME __builtin_FILE()
-#define DEBUG_SQLITE_ZSQL 0
-#define DEBUG_SQLITE_DUP 0
+#define DEBUG_SQLITE_DUMP_ZSQL      (0)
+#define DEBUG_SQLITE_ERR_DUMP_ZSQL  (0)
+#define DEBUG_SQLITE_DUP            (0)
 
 const std::string TSqlite::JOURNAL_MODE = "OFF";
+const std::vector<std::string> TSqlite::PLACEHOLDER_COL{"placeholder"};
+
+// =============================================================================
+
+TSqlite::TSqlite(const std::string& db_name, time_t time): time(time) {
+    // make sure that the filename is valid (file is openable)
+    std::ofstream file(db_name, std::ios_base::app);
+    if (!file)
+        common::panic("cannot open file");
+    file.close();
+
+    // open the db
+    if (sqlite3_open(db_name.data(), &db))
+        common::panic("sqlite3_open error");
+
+    // set journalling mode for the db
+    std::string zSql = "PRAGMA journal_mode = " + JOURNAL_MODE;
+    if (sqlite3_exec(db, zSql.data(), nullptr, nullptr, nullptr))
+        common::panic("PRAGMA journal_mode error");
+}
+
+TSqlite::~TSqlite() { execStatements(); }
 
 int TSqlite::reserveSqliteStatementBuf(size_t n) {
     statement_buf.reserve(n);
     return 0;
 }
 
-TSqlite::TSqlite(const std::string& db_name, time_t time): time(time) {
-    // make sure that the filename is valid (file is openable)
-    std::ofstream file(db_name, std::ios_base::app);
-    if (!file)
-        common::panic(FILENAME, "cannot open file");
-    file.close();
-
-    // open the db
-    if (sqlite3_open(db_name.data(), &db))
-        common::panic(FILENAME, "sqlite3_open error");
-
-    // set journalling mode for the db
-    std::string zSql = "PRAGMA journal_mode = " + JOURNAL_MODE;
-    if (sqlite3_exec(db, zSql.data(), nullptr, nullptr, nullptr))
-        common::panic(FILENAME, "PRAGMA journal_mode error");
-}
-
 int TSqlite::createNewTable(const Table& table) {
     std::string zSql = "CREATE TABLE IF NOT EXISTS " + table.name + "(\n";
     for (size_t i = 0; i < (table.columns).size(); i++) { //name, data type
-        auto name = (table.columns)[i].first;
-        auto type = (table.columns)[i].second;
+        auto name = (table.columns)[i];
         zSql.append(
-            "\"" + name + "\"" + ' ' + "\"" + type + "\"" + 
+            "\"" + name + "\"" + ' ' + "\"TEXT\"" + 
             ((i == 0) ? " PRIMARY KEY" : "") + 
             ((i != (table.columns).size() - 1) ? ",\n" : ");\n")
         );
@@ -50,20 +54,13 @@ int TSqlite::createNewTable(const Table& table) {
     //     "<name1>" "<type1>");
 
     // executes prepared zSql statement
-    writezSql(zSql, "create_new_table");
+    writezSql(zSql);
         
     return 0;
 }
 
-int TSqlite::insertRow(const Table& table, const std::vector<std::string>& data) {
-    std::string zSql = "INSERT OR IGNORE INTO " + table.name + "(";
-
-    //add table info
-    for (size_t i = 0; i < (table.columns).size(); i++) { 
-        zSql.append("\"" + (table.columns)[i].first + "\""); //names of rows
-        if (i != (table.columns).size() - 1) zSql.append(",");
-    }
-    zSql.append(")\nVALUES (");
+int TSqlite::insertRow(const std::string& tablename, const std::vector<std::string>& data) {
+    std::string zSql = "INSERT OR IGNORE INTO " + tablename + " VALUES (";
 
     //add data info
     for (size_t i = 0; i < data.size(); i++) { 
@@ -75,20 +72,59 @@ int TSqlite::insertRow(const Table& table, const std::vector<std::string>& data)
     // VALUES (<data[0]>,<data[1]>);
 
     // executes prepared zSql statement
-    writezSql(zSql, "insert_row");
+    writezSql(zSql);
 
     return 0;
 }
 
 int TSqlite::deleteRow(const Table& table, const std::string& key) {
-    std::string primaryKey = table.columns[0].first;
     std::string zSql = "DELETE FROM " + table.name + " WHERE " +
-        primaryKey + " = " + "\"" + key + "\"" + ";\n"; 
+        table.columns[0] + " = " + "\"" + key + "\"" + ";\n"; 
     // DELETE FROM <tablename> WHERE <primarykey> = "<data[0]>";
     // the delete will be okay even if the values dont exist
     
     // executes prepared zSql statement
-    writezSql(zSql, "delete_row");
+    writezSql(zSql);
+
+    return 0;
+}
+
+int TSqlite::deleteTable(const Table& table, const std::string& key) {
+    // PART 1: go into key and perform drop tables on every row (which are tables) 
+    // that is inside key. before we drop the table, we create the table if not 
+    // exists so that we don't error out if we try to drop a leaf table
+
+    // make the table just in case if it doesn't exist (leaf row)
+    Table leafkeytable(key, PLACEHOLDER_COL);
+    createNewTable(leafkeytable);
+
+    // get the columns and rows of the key table (useful if not leaf)
+    std::vector<std::string> keytable_cols;
+    std::vector<std::vector<std::string>> keytable_rows;
+    getCols(key, keytable_cols);
+    getAllRows(key, keytable_rows);
+
+    Table keytable(key, keytable_cols);
+
+    // in the base case (leaf), temptable_rows will have no entries, so this
+    // will not continue the recursive callchain
+    for (const auto& row : keytable_rows)
+        deleteTable(keytable, row[0]);
+
+    // PART 2: delete all rows in key, which is fine to do since all rows (tables) 
+    // have been dropped. this should not error out because it returns fine if
+    // there are no rows in key table
+    std::string zSql = "DELETE FROM " + key + ";\n";
+    writezSql(zSql);
+
+    // PART 3: delete the table that key points to. if the table doesn't exist,
+    // this still shouldn't error out
+    zSql = "DROP TABLE IF EXISTS " + key + ";\n";
+    writezSql(zSql);
+
+    // PART 4: delete the row containing key from the Table table. this should
+    // not error out because we know that key exists.
+    deleteRow(table, key);
 
     return 0;
 }
@@ -105,21 +141,12 @@ static int C_getRowCallback(
     // try to cast the TSqlite object
     TSqlite* dbptr;
     try { dbptr = static_cast<TSqlite*>(TSqlite_ptr); }
-    catch (std::exception& e) { common::panic(FILENAME, "static_cast failed"); }
-    dbptr->getRowCallback(cols, data);
+    catch (std::exception& e) { common::panic("static_cast failed"); }
+    dbptr->callback(cols, data);
 
     return 0;
 } 
 }
-int TSqlite::getRowCallback(int cols, char** data) {
-    // transfer data to row, and then put row in the read_buf table
-    std::vector<std::string> row;
-    for (int j = 0; j < cols; j++)
-        row.emplace_back(data[j]);
-    read_buf.emplace_back(row);
-    return 0;
-}
-
 // gets a single row's columns and returns it. the row that is acquired is the
 // one whose primary key matches the given key
 int TSqlite::getRow(
@@ -127,7 +154,7 @@ int TSqlite::getRow(
     const std::string& key, 
     std::vector<std::vector<std::string>>& data) {
 
-    std::string primaryKey = table.columns[0].first;
+    std::string primaryKey = table.columns[0];
     std::string zSql = "SELECT * FROM " + table.name + " WHERE " +
         primaryKey + " = " + "\"" + key + "\"" + ";\n";
     // SELECT * from <tablename> WHERE <primarykey> = "<data[0]>";
@@ -140,6 +167,7 @@ int TSqlite::getRow(
 
     // copy read buffer into data
     data = read_buf;
+    read_buf.clear();
 
     return 0;
 }
@@ -147,11 +175,10 @@ int TSqlite::getRow(
 // does the same thing as getRow, but Sqlite statement is modified to get all
 // rows and callback is called on all rows
 int TSqlite::getAllRows(
-    const Table& table, 
+    const std::string& tablename, 
     std::vector<std::vector<std::string>>& data) {
 
-    std::string primaryKey = table.columns[0].first;
-    std::string zSql = "SELECT * FROM " + table.name + ";";
+    std::string zSql = "SELECT * FROM " + tablename + ";";
     // SELECT * from <tablename>;
 
     std::lock_guard lock(read_mutex);
@@ -160,11 +187,50 @@ int TSqlite::getAllRows(
     // execzSql will execute zSql atomically
     execzSql(zSql, &C_getRowCallback);
 
-    // copy read buffer into data
+    // copy read buffer into data (read_buf may be empty if table empty)
     data = read_buf;
+    read_buf.clear();
 
     return 0;
 
+}
+
+extern "C" {
+static int C_getColsCallback(
+    void* TSqlite_ptr, 
+    int cols, 
+    char** data __attribute__((unused)), 
+    char** colnames) {
+
+    // try to cast the TSqlite object
+    TSqlite* dbptr;
+    try { dbptr = static_cast<TSqlite*>(TSqlite_ptr); }
+    catch (std::exception& e) { common::panic("static_cast failed"); }
+    dbptr->callback(cols, colnames);
+
+    return 0;
+} 
+}
+int TSqlite::getCols(
+    const std::string& tablename,
+    std::vector<std::string>& data) {
+
+    std::string zSql = "SELECT * FROM " + tablename + ";";
+    // SELECT * from <tablename>;
+
+    std::lock_guard lock(read_mutex);
+
+    // puts this new statement in the buffer and executes it with our callback function
+    // execzSql will execute zSql atomically
+    execzSql(zSql, &C_getColsCallback);
+
+    // copy read buffer into data if read buffer isnt empty (
+    if (!read_buf.empty()) {
+        data = read_buf[0];
+        read_buf.clear();
+    }
+
+    return 0;
 }
 
 // calls execzSql without allowing caller to pass a custom callback function
@@ -174,7 +240,7 @@ int TSqlite::execStatements() {
 
 int TSqlite::writezSql(const std::string& zSql, const std::string& funcname) {
     if (db == nullptr || zSql.empty() || funcname.empty())
-        common::panic(FILENAME, "args", std::string(funcname) + ", writezSql");
+        common::panic("args", std::string(funcname) + ", writezSql");
 
     std::lock_guard<std::mutex> lock(db_mutex);
     statement_buf.append(zSql);
@@ -196,8 +262,6 @@ int TSqlite::execzSql(
     // tracks if a goto was executed
     bool goto_complete = false;
 
-
-
     std::lock_guard<std::mutex> lock(db_mutex);
 
     int ret;
@@ -207,8 +271,9 @@ int TSqlite::execzSql(
     // execute sqlite3 statement
     execzSql_execute_statement:
     // print out statement if debug on
-    if (DEBUG_SQLITE_ZSQL) 
-        std::cerr << "[debug] [" << funcname << "] zSql: \n" << statement_buf << std::endl;
+    if (DEBUG_SQLITE_DUMP_ZSQL) 
+        std::cerr << "[debug] [" << funcname << "] zSql: \n" << statement_buf << std::endl << std::endl;
+
     if ( 
         (ret = sqlite3_exec(db, statement_buf.data(), cb, this, &errmsg)) &&
         ret != 19
@@ -220,14 +285,14 @@ int TSqlite::execzSql(
             sqlite3_free(errmsg);
         }
 
-        std::cerr << "[debug] zSql: \n" << statement_buf << std::endl;
-        common::panic(FILENAME, strerrmsg + " " + std::to_string(ret), 
+        if (DEBUG_SQLITE_ERR_DUMP_ZSQL)
+            std::cerr << "[error debug] zSql: \n" << statement_buf << std::endl;
+        common::panic(strerrmsg + " " + std::to_string(ret), __builtin_FILE(),
             std::string(funcname) + ", execzSql");
     }
-
     // clear buffer since we finished executing everything
     statement_buf.clear();
-    
+
     // return if no additional statement given or if a goto was completed
     if (zSql == "" || goto_complete) return 0;
 
@@ -239,4 +304,13 @@ int TSqlite::execzSql(
     cb = callback;
     goto_complete = true;
     goto execzSql_execute_statement;
+}
+
+int TSqlite::callback(int cols, char** data) {
+    // transfer data to row, and then put row in the read_buf table
+    std::vector<std::string> row;
+    for (int j = 0; j < cols; j++)
+        row.emplace_back(data[j]);
+    read_buf.emplace_back(row);
+    return 0;
 }

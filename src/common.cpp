@@ -5,8 +5,6 @@
 // nyc-subway-tracker includes
 #include <common.h>
 
-#define FILENAME __builtin_FILE()
-
 bool operator==(const Train& lhs, const Train& rhs) {
     return (lhs.name == rhs.name) && (lhs.dirID == rhs.dirID);
 }
@@ -37,21 +35,24 @@ std::string formatTime(const time_t* time, int mode) {
         std::strftime(buf, 32, "%d-%H:%M:%S", std::localtime(time));
         break;
     default:
-        common::panic(FILENAME, "bad mode");
+        common::panic("bad mode");
         break;
     }
 
     return std::string(buf);
 }
 
-void panic(
-    const std::string& filename, 
+int panic(
     const std::string& misc, 
-    const std::string& funcname) {
+    const std::string& filename, 
+    const std::string& funcname,
+    unsigned int line) {
 
-    std::cerr << "[error] [" << filename << "] [" << funcname << "] " << misc
-              << std::endl;
+    if (enablePanic)
+        std::cerr << "[error] [" << filename << "] [" << funcname << "] " << 
+            "[Line " << line << "] " << misc << std::endl;
     exit(1);
+    return 1;
 }
 
 }
