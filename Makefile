@@ -81,11 +81,13 @@ OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCE
 
 # Adjust variables depending on environment
 ifeq ($(filter ${shell uname}, Linux),) 		# Linux
-    TARGETEXT 	:= 
-else ifeq ($(filter ${shell uname}, Darwin),) 	# macOS
-    TARGETEXT 	:= 
+    TARGETEXT 		:= 
+else ifeq ($(filter ${shell uname}, Darwin),) 	# macOS, use darwinssl instead
+    TARGETEXT 		:= 
+    OPENSSLTARGET 	:=
+    CURLFLAG		:= --with-darwinssl
 else ifeq ($(findstring $(shell uname), NT),) 	# Windows (msys2 or cygwin)
-    TARGETEXT 	:= .exe
+    TARGETEXT 		:= .exe
 else
     exit 1
 endif
