@@ -86,17 +86,17 @@ SOURCES 		:= $(wildcard $(SRCPATH)/*.${SRCEXT})
 OBJECTS 		:= $(patsubst ${SRCPATH}/%.${SRCEXT},${BUILDPATH}/%.${OBJEXT},${SOURCES})
 
 # Adjust variables depending on environment
-ifneq ($(filter ${shell uname}, Linux),) 		# Linux
+ifneq ($(filter Linux, $(shell uname)),) 		# Linux
     OS				:= linux
     TARGETEXT 		:= 
-else ifneq ($(filter ${shell uname}, Darwin),) 	# macOS
+else ifneq ($(filter Darwin, $(shell uname)),) 	# macOS
     OS				:= darwin
     TARGETEXT		:=
-else ifneq ($(findstring $(shell uname), NT),) 	# Windows (msys2 or cygwin)
+else ifneq ($(findstring NT, $(shell uname)),) 	# Windows (msys2 or cygwin)
     OS				:= windows
     TARGETEXT 		:= .exe
 else
-    exit 1
+    OS				:= 
 endif
 
 # Target
@@ -107,7 +107,9 @@ TARGET 			:= ${BINPATH}/$(TARGETNAME)${TARGETEXT}
 
 # wrapper to pass our makeflags into the make call
 all:
-#	echo [debug] the OS is $(OS)
+#	@echo [debug] the OS is $(OS)
+	@if [ "$(OS)" = "" ]; then exit 1; fi
+
 	@$(MAKE) -$(MAKEFLAGS) \
 	$(MYMAKEFLAGS) \
 	$(if $(findstring j, $(MAKEFLAGS)),,-j) \
@@ -174,7 +176,7 @@ $(OPENSSLTARGET):
 	@mkdir ${BUILDPATH}/openssl; cd ${BUILDPATH}/openssl; \
 	../../${EXTPATH}/openssl/Configure $(OPENSSLFLAG); \
 	$(MAKE) $(MYMAKEFLAGS); \
-	$(MAKE) $(MYMAKEFLAGS) install
+	$(MAKE) $(MYMAKEFLAGS) install_sw
 
 	@echo \[$(shell date +%Y-%m-%d-%H:%M:%S)\] \[$(shell uname -srm)\] built $@ >> $(BUILDLOG)
 
