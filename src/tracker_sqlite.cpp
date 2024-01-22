@@ -78,6 +78,8 @@ int TSqlite::insertRow(const std::string& tablename, const std::vector<std::stri
 }
 
 int TSqlite::deleteRow(const Table& table, const std::string& key) {
+    execzSql();
+
     std::string zSql = "DELETE FROM " + table.name + " WHERE " +
         table.columns[0] + " = " + "\"" + key + "\"" + ";\n"; 
     // DELETE FROM <tablename> WHERE <primarykey> = "<data[0]>";
@@ -99,6 +101,7 @@ int TSqlite::deleteTable(const Table& table, const std::string& key) {
     createNewTable(leafkeytable);
 
     // get the columns and rows of the key table (useful if not leaf)
+    // execzSql is run to update the table in getCols
     std::vector<std::string> keytable_cols;
     std::vector<std::vector<std::string>> keytable_rows;
     getCols(key, keytable_cols);
@@ -154,6 +157,7 @@ int TSqlite::getRow(
     const std::string& key, 
     std::vector<std::vector<std::string>>& data) {
 
+    execzSql();
     std::string primaryKey = table.columns[0];
     std::string zSql = "SELECT * FROM " + table.name + " WHERE " +
         primaryKey + " = " + "\"" + key + "\"" + ";\n";
@@ -178,6 +182,7 @@ int TSqlite::getAllRows(
     const std::string& tablename, 
     std::vector<std::vector<std::string>>& data) {
 
+    execzSql();
     std::string zSql = "SELECT * FROM " + tablename + ";";
     // SELECT * from <tablename>;
 
@@ -215,6 +220,7 @@ int TSqlite::getCols(
     const std::string& tablename,
     std::vector<std::string>& data) {
 
+    execzSql();
     std::string zSql = "SELECT * FROM " + tablename + ";";
     // SELECT * from <tablename>;
 

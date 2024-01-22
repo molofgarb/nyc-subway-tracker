@@ -1,24 +1,22 @@
 # To-do:
+
+- figure out why there is an empty table sometimes in getCols
+
 - database vacuum flag, automatically set to enable
 
 - make sure database is limited to a certain number of snapshots
   - add logger truncate function to reduce the database to some fixed number of entries
     before the writing starts, and then check to reduce it every time a new snapshot is performed
 
-- modify sqlite_tracker so that it doesnt write all the table column junk
-
-- protect against sql injection
-
-- readInto function to ensure that read_buf is cleared after reads
-
 - possibility of partial snapshots, such as snapshots by line instead of always subway
   - make this a logger option
 
 - subway-logger.exe and subway-viewer.exe as separate programs to interact with subway.db
-
+- protect against sql injection
 - make documentation on how to read the database
 
 ## Completed
+- modify sqlite_tracker so that it doesnt write all the table column junk
 - finish porting tracker to new sqlite class structure
 - do a pass-through for input/get-data security and error parsing
 - sanitize inputs from mta website

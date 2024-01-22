@@ -9,8 +9,7 @@
 
 #include <subway.h>
 
-#define FILENAME __builtin_FILE()
-#define DEBUG_UPDATETHREAD 0
+#define DEBUG_UPDATETHREAD (0)
 
 using st_ptr = std::shared_ptr<Station>;
 

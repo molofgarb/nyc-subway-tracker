@@ -4,7 +4,7 @@
 // nyc-subway-tracker includes
 #include <tracker.h>
 
-#define DEBUG_SUBWAYOUT 0
+#define DEBUG_SUBWAYOUT (0)
 
 // parses cmdline arguments passed to pain and populates options and db_filename
 int parseArgs(
